@@ -5,7 +5,7 @@
 
 #include "tabuleiro.h"
 
-#define posline(l,x) (x-border)/(l-2*border)
+#define posline(l,x) (x-border)*8/(l-2*border)
 #define linepos(x,y) border+(y)*(x-2*border)/8
 #define sizepos(x)   (x-2*border)/16
 
@@ -81,7 +81,8 @@ int eventLoop(Tabuleiro *t) {
 				draw(t);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				printf("X: %d Y: %d", e.motion.x, e.motion.y);
+				printf("p(x): %d p(y): %d\n", posline(hsize, e.motion.x),
+				                              posline(vsize, e.motion.y));
 				break;
 		}
 	return 0;
