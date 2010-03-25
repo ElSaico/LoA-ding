@@ -10,24 +10,27 @@
 #define INIT_BRANCO 0x7E0000000000007EULL
 #define INIT_PRETO  0x0081818181818100ULL
 
-#define coord(t,x,y) (t & linha(x) & coluna(y))
+#define pos(x,y) (linha(x) & coluna(y))
+#define coord(t,x,y) (t & pos(x, y))
 #define move(t,x0,x) ((x | x0) ^ t)
 #define count(x) __builtin_popcountll(x)
-#define grid(x,y) (x ^ y)
+#define grid(t) (t.p_jogador ^ t.p_adv)
 #define linha(x) (0xFF00000000000000ULL >> (x << 3))
 #define coluna(x) (0x8080808080808080ULL >> x)
-#define pecas(x) ((x).jogador == J_BRANCO ? (x).branco : (x).preto)
+#define adv(t) ((t).jogador == J_BRANCO ? J_PRETO : J_BRANCO)
 
 typedef enum TPlayer {J_BRANCO, J_PRETO} Jogador;
 
 typedef struct tab {
-	uint64_t branco;
-	uint64_t preto;
+	uint64_t p_jogador;
+	uint64_t p_adv;
 	Jogador jogador;
 	Jogador turno;
 } Tabuleiro;
 
 Tabuleiro novoTab(Jogador in);
-bool moveH(uint64_t orig, uint64_t dest);
+uint64_t moveH(Tabuleiro t, uint64_t or);
+uint64_t moveV(Tabuleiro t, uint64_t or);
+uint64_t moveD(Tabuleiro t, uint64_t or);
 
 #endif

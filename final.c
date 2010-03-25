@@ -8,24 +8,33 @@
 #define posline(l,x) (x-border)*8/(l-2*border)
 #define linepos(x,y) border+(y)*(x-2*border)/8
 #define sizepos(x) (x-2*border)/16
-#define coordXY(t,x,y) coord(pecas(t), posline(hsize, x), posline(vsize, y))
+#define coordXY(t,x,y) coord(t, posline(vsize, y), posline(hsize, x))
 
 #define C_BRANCO 0xFFFFFFFF
 #define C_PRETO  0x000000FF
+#define C_CINZA  0x777777FF
 
 const Sint16 border = 50;
 Sint16 hsize = 640;
 Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
+uint64_t move = 0;
 
 void mostraPreto(int l, int c, Sint16 cor) {
-	filledEllipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
+	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
 	                    0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
 }
 
 void mostraBranco(int l, int c, Sint16 cor) {
-	ellipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
+	ellipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
 	              0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
+}
+
+void mostra(Jogador j, int l, int c, Sint16 cor) {
+	if (j == J_PRETO)
+		mostraPreto(l, c, cor);
+	else
+		mostraBranco(l, c, cor);
 }
 
 void draw(Tabuleiro *t) {
@@ -38,11 +47,16 @@ void draw(Tabuleiro *t) {
 			stringColor(tela, border/2, linepos(vsize, i+0.5), n, C_PRETO);
 			n[0] = i + 'A';
 			stringColor(tela, linepos(hsize, i+0.5), border/2, n, C_PRETO);
-			for (int j = 0; j < 8; ++j)
-				if (coord(t->preto, i, j))
-					mostraPreto(i, j, C_PRETO);
-				else if (coord(t->branco, i, j))
-					mostraBranco(i, j, C_PRETO);
+			for (int j = 0; j < 8; ++j) {
+				if (coord(move, i, j))
+					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
+					       linepos(hsize, j+1), linepos(vsize, i+1), C_CINZA);
+
+				if (coord(t->p_jogador, i, j))
+					mostra(t->jogador, i, j, C_PRETO);
+				else if (coord(t->p_adv, i, j))
+					mostra(adv(*t), i, j, C_PRETO);				
+				}
 		}
 		
 		for (int i = 1; i < 8; ++i) {
@@ -63,6 +77,7 @@ void draw(Tabuleiro *t) {
 }
 
 bool eventLoop(Tabuleiro *t) {
+	uint64_t origem;
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 		switch (e.type) {
@@ -75,10 +90,12 @@ bool eventLoop(Tabuleiro *t) {
 				draw(t);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				if ((t->turno == t->jogador) && coordXY(*t, e.motion.x, e.motion.y)) {
-					printf("p(x): %d p(y): %d\n", posline(hsize, e.motion.x),
-					                              posline(vsize, e.motion.y));
-					
+				origem = coordXY(t->p_jogador, e.motion.x, e.motion.y);
+				if ((t->turno == t->jogador) && origem) {
+					//printf("p(x): %d p(y): %d\n", posline(vsize, e.motion.y),
+					//                              posline(hsize, e.motion.x));					
+					move = moveH(*t, origem) | moveV(*t, origem);
+					draw(t);
 				}
 				break;
 		}
@@ -92,7 +109,8 @@ int main() {
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
-	Tabuleiro t = novoTab(J_BRANCO);
+	Tabuleiro t = novoTab(J_PRETO);
+	t.turno = J_PRETO;
 	draw(&t);
 	
 	bool sair = false;
