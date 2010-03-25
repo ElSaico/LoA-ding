@@ -7,7 +7,8 @@
 
 #define posline(l,x) (x-border)*8/(l-2*border)
 #define linepos(x,y) border+(y)*(x-2*border)/8
-#define sizepos(x)   (x-2*border)/16
+#define sizepos(x) (x-2*border)/16
+#define coordXY(t,x,y) coord(pecas(t), posline(hsize, x), posline(vsize, y))
 
 #define C_BRANCO 0xFFFFFFFF
 #define C_PRETO  0x000000FF
@@ -17,63 +18,56 @@ Sint16 hsize = 640;
 Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
 
+void mostraPreto(int l, int c, Sint16 cor) {
+	filledEllipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
+	                    0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
+}
+
+void mostraBranco(int l, int c, Sint16 cor) {
+	ellipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
+	              0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
+}
+
 void draw(Tabuleiro *t) {
 	SDL_FillRect(tela, NULL, C_BRANCO);
 	
 	if (hsize >= 2*border && vsize >= 2*border) {
-		stringColor(tela, border/2, linepos(vsize, 0.5), "1", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 1), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 1.5), "2", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 2), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 2.5), "3", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 3), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 3.5), "4", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 4), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 4.5), "5", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 5), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 5.5), "6", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 6), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 6.5), "7", C_PRETO);
-		hlineColor(tela, border, hsize-border, linepos(vsize, 7), C_PRETO);
-		stringColor(tela, border/2, linepos(vsize, 7.5), "8", C_PRETO);
+		char n[2] = {' ', '\0'};
+		for (int i = 0; i < 8; ++i) {
+			n[0] = i + '1';
+			stringColor(tela, border/2, linepos(vsize, i+0.5), n, C_PRETO);
+			n[0] = i + 'A';
+			stringColor(tela, linepos(hsize, i+0.5), border/2, n, C_PRETO);
+			for (int j = 0; j < 8; ++j)
+				if (coord(t->preto, i, j))
+					mostraPreto(i, j, C_PRETO);
+				else if (coord(t->branco, i, j))
+					mostraBranco(i, j, C_PRETO);
+		}
 		
-		stringColor(tela, linepos(hsize, 0.5), border/2, "A", C_PRETO);
-		vlineColor(tela, linepos(hsize, 1), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 1.5), border/2, "B", C_PRETO);
-		vlineColor(tela, linepos(hsize, 2), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 2.5), border/2, "C", C_PRETO);
-		vlineColor(tela, linepos(hsize, 3), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 3.5), border/2, "D", C_PRETO);
-		vlineColor(tela, linepos(hsize, 4), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 4.5), border/2, "E", C_PRETO);
-		vlineColor(tela, linepos(hsize, 5), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 5.5), border/2, "F", C_PRETO);
-		vlineColor(tela, linepos(hsize, 6), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 6.5), border/2, "G", C_PRETO);
-		vlineColor(tela, linepos(hsize, 7), border, vsize-border, C_PRETO);
-		stringColor(tela, linepos(hsize, 7.5), border/2, "H", C_PRETO);
-				
-		for (int l = 0; l < 8; ++l)
-			for (int c = 0; c < 8; ++c)
-				if (coord(t->preto, l, c))
-					filledEllipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
-					                    0.75*sizepos(hsize),   0.75*sizepos(vsize), C_PRETO);
-				else if (coord(t->branco, l, c))
-					ellipseColor(tela, linepos(hsize, l+0.5), linepos(vsize, c+0.5),
-					              0.75*sizepos(hsize),   0.75*sizepos(vsize), C_PRETO);
+		for (int i = 1; i < 8; ++i) {
+			hlineColor(tela, border, hsize-border, linepos(vsize, i), C_PRETO);
+			vlineColor(tela, linepos(hsize, i), border, vsize-border, C_PRETO);
+		}
 		
-		stringColor(tela, border, vsize-border/2, "Turno: ", C_PRETO);
+		const char *cores[] = {"Branco", "Preto"};
+		uint8_t cor = t->turno == J_BRANCO ? 0 : 1;
+		const char *jogadores[] = {"Jogador", "Adversario"};
+		uint8_t jogador = t->jogador == t->turno ? 0 : 1;
+		char mensagem[30];
+		sprintf(mensagem, "Turno: %s (%s)", cores[cor], jogadores[jogador]);
+		stringColor(tela, border, vsize-border/2, mensagem, C_PRETO);
 	}
 
 	SDL_Flip(tela);
 }
 
-int eventLoop(Tabuleiro *t) {
+bool eventLoop(Tabuleiro *t) {
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 		switch (e.type) {
 			case SDL_QUIT:
-				return 1;
+				return true;
 			case SDL_VIDEORESIZE:
 				hsize = e.resize.w;
 				vsize = e.resize.h;
@@ -81,11 +75,14 @@ int eventLoop(Tabuleiro *t) {
 				draw(t);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				printf("p(x): %d p(y): %d\n", posline(hsize, e.motion.x),
-				                              posline(vsize, e.motion.y));
+				if ((t->turno == t->jogador) && coordXY(*t, e.motion.x, e.motion.y)) {
+					printf("p(x): %d p(y): %d\n", posline(hsize, e.motion.x),
+					                              posline(vsize, e.motion.y));
+					
+				}
 				break;
 		}
-	return 0;
+	return false;
 }
 
 int main() {
@@ -95,12 +92,12 @@ int main() {
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
-	Tabuleiro* t = novoTab(J_BRANCO);
-	draw(t);
+	Tabuleiro t = novoTab(J_BRANCO);
+	draw(&t);
 	
-	uint8_t sair = 0;
+	bool sair = false;
 	while (!sair) {
-		sair = eventLoop(t);
+		sair = eventLoop(&t);
 		SDL_framerateDelay(&fps);
 		//draw(t); // usar apenas ao atualizar tabuleiro?
 	}

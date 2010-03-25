@@ -3,31 +3,31 @@
 
 #include <stdint.h>
 
+#define bool uint8_t
+#define false 0
+#define true 1
+
 #define INIT_BRANCO 0x7E0000000000007EULL
 #define INIT_PRETO  0x0081818181818100ULL
 
-#define coord(t,x,y) (t & linhas[x] & colunas[y])
-#define move(t,x0,x) (x | x0) ^ t
+#define coord(t,x,y) (t & linha(x) & coluna(y))
+#define move(t,x0,x) ((x | x0) ^ t)
+#define count(x) __builtin_popcountll(x)
+#define grid(x,y) (x ^ y)
+#define linha(x) (0xFF00000000000000ULL >> (x << 3))
+#define coluna(x) (0x8080808080808080ULL >> x)
+#define pecas(x) ((x).jogador == J_BRANCO ? (x).branco : (x).preto)
 
-enum TTurno {J_NENHUM, J_BRANCO, J_PRETO};
-
-static const uint64_t linhas[] = {0xFF00000000000000ULL, 0x00FF000000000000ULL,
-           0x0000FF0000000000ULL, 0x000000FF00000000ULL, 0x00000000FF000000ULL,
-           0x0000000000FF0000ULL, 0x000000000000FF00ULL, 0x00000000000000FFULL};
-
-static const uint64_t colunas[] = {0x8080808080808080ULL, 0x4040404040404040ULL,
-            0x2020202020202020ULL, 0x1010101010101010ULL, 0x0808080808080808ULL,
-            0x0404040404040404ULL, 0x0202020202020202ULL, 0x0101010101010101ULL};
-
-typedef enum TTurno Turno;
+typedef enum TPlayer {J_BRANCO, J_PRETO} Jogador;
 
 typedef struct tab {
 	uint64_t branco;
 	uint64_t preto;
-	Turno turno;
+	Jogador jogador;
+	Jogador turno;
 } Tabuleiro;
 
-Tabuleiro* novoTab(Turno in);
-uint64_t bbranco(Tabuleiro* t);
+Tabuleiro novoTab(Jogador in);
+bool moveH(uint64_t orig, uint64_t dest);
 
 #endif
