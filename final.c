@@ -44,6 +44,7 @@ void draw(Tabuleiro *t) {
 	
 	if (hsize >= 2*border && vsize >= 2*border) {
 		char n[2] = {' ', '\0'};
+		Sint16 cor;
 		for (int i = 0; i < 8; ++i) {
 			n[0] = i + '1';
 			stringColor(tela, border/2, linepos(vsize, i+0.5), n, C_PRETO);
@@ -53,11 +54,11 @@ void draw(Tabuleiro *t) {
 				if (coord(move, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_CINZA);
-
+				cor = coord(origem, i, j) ? C_CINZA : C_PRETO;
 				if (coord(t->p_jogador, i, j))
-					mostra(t->jogador, i, j, C_PRETO);
+					mostra(t->jogador, i, j, cor);
 				else if (coord(t->p_adv, i, j))
-					mostra(adv(*t), i, j, C_PRETO);				
+					mostra(adv(*t), i, j, cor);
 				}
 		}
 		
@@ -67,11 +68,11 @@ void draw(Tabuleiro *t) {
 		}
 		
 		const char *cores[] = {"Branco", "Preto"};
-		uint8_t cor = t->turno == J_BRANCO ? 0 : 1;
+		uint8_t ncor = t->turno == J_BRANCO ? 0 : 1;
 		const char *jogadores[] = {"Jogador", "Adversario"};
-		uint8_t jogador = t->jogador == t->turno ? 0 : 1;
+		uint8_t njogador = t->jogador == t->turno ? 0 : 1;
 		char mensagem[30];
-		sprintf(mensagem, "Turno: %s (%s)", cores[cor], jogadores[jogador]);
+		sprintf(mensagem, "Turno: %s (%s)", cores[ncor], jogadores[njogador]);
 		stringColor(tela, border, vsize-border/2, mensagem, C_PRETO);
 	}
 
@@ -98,10 +99,11 @@ bool eventLoop(Tabuleiro *t) {
 						if (move & destino) {
 							t->p_jogador = move(t->p_jogador, origem, destino);
 							t->p_adv &= ~destino;
-							t->turno = adv(*t);
+							//t->turno = adv(*t);
 						}
 					}
 					move = 0;
+					origem = 0;
 				} else if (t->turno == t->jogador) {
 					origem = coordXY(t->p_jogador, e.button.x, e.button.y);
 					if (origem)
@@ -117,7 +119,7 @@ bool eventLoop(Tabuleiro *t) {
 int main() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);
-	SDL_WM_SetCaption("Jogo Aleatório", NULL);
+	SDL_WM_SetCaption("LoA-ding", NULL);
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
