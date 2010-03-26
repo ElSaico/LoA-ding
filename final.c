@@ -92,9 +92,8 @@ bool eventLoop(Tabuleiro *t) {
 			case SDL_MOUSEBUTTONDOWN:
 				origem = coordXY(t->p_jogador, e.motion.x, e.motion.y);
 				if ((t->turno == t->jogador) && origem) {
-					//printf("p(x): %d p(y): %d\n", posline(vsize, e.motion.y),
-					//                              posline(hsize, e.motion.x));					
-					move = moveH(*t, origem) | moveV(*t, origem);
+					move = moveH(*t, origem) | moveV(*t, origem)
+					    | moveDp(*t, origem) | moveDs(*t, origem);
 					draw(t);
 				}
 				break;

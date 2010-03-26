@@ -9,6 +9,8 @@
 
 #define INIT_BRANCO 0x7E0000000000007EULL
 #define INIT_PRETO  0x0081818181818100ULL
+#define DIAG_PRI    0x8040201008040201ULL
+#define DIAG_SEC    0x8000000000000000ULL
 
 #define pos(x,y) (linha(x) & coluna(y))
 #define coord(t,x,y) (t & pos(x, y))
@@ -31,6 +33,7 @@ typedef struct tab {
 Tabuleiro novoTab(Jogador in);
 uint64_t moveH(Tabuleiro t, uint64_t or);
 uint64_t moveV(Tabuleiro t, uint64_t or);
-uint64_t moveD(Tabuleiro t, uint64_t or);
+uint64_t moveDp(Tabuleiro t, uint64_t or);
+uint64_t moveDs(Tabuleiro t, uint64_t or);
 
 #endif
