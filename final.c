@@ -9,6 +9,7 @@
 #define linepos(x,y) border+(y)*(x-2*border)/8
 #define sizepos(x) (x-2*border)/16
 #define coordXY(t,x,y) coord(t, posline(vsize, y), posline(hsize, x))
+#define posXY(x,y) pos(posline(vsize, y), posline(hsize, x))
 
 #define C_BRANCO 0xFFFFFFFF
 #define C_PRETO  0x000000FF
@@ -19,6 +20,7 @@ Sint16 hsize = 640;
 Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
 uint64_t move = 0;
+uint64_t origem = 0;
 
 void mostraPreto(int l, int c, Sint16 cor) {
 	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
@@ -77,7 +79,7 @@ void draw(Tabuleiro *t) {
 }
 
 bool eventLoop(Tabuleiro *t) {
-	uint64_t origem;
+	uint64_t destino;
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 		switch (e.type) {
@@ -90,12 +92,23 @@ bool eventLoop(Tabuleiro *t) {
 				draw(t);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				origem = coordXY(t->p_jogador, e.motion.x, e.motion.y);
-				if ((t->turno == t->jogador) && origem) {
-					move = moveH(*t, origem) | moveV(*t, origem)
-					    | moveDp(*t, origem) | moveDs(*t, origem);
-					draw(t);
+				if (move) {
+					if (e.button.button == SDL_BUTTON_LEFT) {
+						destino = posXY(e.button.x, e.button.y);
+						if (move & destino) {
+							t->p_jogador = move(t->p_jogador, origem, destino);
+							t->p_adv &= ~destino;
+							t->turno = adv(*t);
+						}
+					}
+					move = 0;
+				} else if (t->turno == t->jogador) {
+					origem = coordXY(t->p_jogador, e.button.x, e.button.y);
+					if (origem)
+						move = moveH(*t, origem) | moveV(*t, origem)
+							| moveDp(*t, origem) | moveDs(*t, origem);
 				}
+				draw(t);
 				break;
 		}
 	return false;
