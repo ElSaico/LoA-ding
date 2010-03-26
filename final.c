@@ -14,6 +14,7 @@
 #define C_BRANCO 0xFFFFFFFF
 #define C_PRETO  0x000000FF
 #define C_CINZA  0x777777FF
+#define C_VERDE  0x00FF00FF
 
 const Sint16 border = 50;
 Sint16 hsize = 640;
@@ -22,17 +23,17 @@ SDL_Surface *tela = NULL;
 uint64_t move = 0;
 uint64_t origem = 0;
 
-void mostraPreto(int l, int c, Sint16 cor) {
+void mostraPreto(int l, int c, Uint32 cor) {
 	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
 	                    0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
 }
 
-void mostraBranco(int l, int c, Sint16 cor) {
+void mostraBranco(int l, int c, Uint32 cor) {
 	ellipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
 	              0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
 }
 
-void mostra(Jogador j, int l, int c, Sint16 cor) {
+void mostra(Jogador j, int l, int c, Uint32 cor) {
 	if (j == J_PRETO)
 		mostraPreto(l, c, cor);
 	else
@@ -43,18 +44,15 @@ void draw(Tabuleiro *t) {
 	SDL_FillRect(tela, NULL, C_BRANCO);
 	
 	if (hsize >= 2*border && vsize >= 2*border) {
-		char n[2] = {' ', '\0'};
-		Sint16 cor;
+		Uint32 cor;
 		for (int i = 0; i < 8; ++i) {
-			n[0] = i + '1';
-			stringColor(tela, border/2, linepos(vsize, i+0.5), n, C_PRETO);
-			n[0] = i + 'A';
-			stringColor(tela, linepos(hsize, i+0.5), border/2, n, C_PRETO);
+			characterColor(tela, border/2, linepos(vsize, i+0.5), i+'1', C_PRETO);
+			characterColor(tela, linepos(hsize, i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
 				if (coord(move, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_CINZA);
-				cor = coord(origem, i, j) ? C_CINZA : C_PRETO;
+				cor = coord(origem, i, j) ? C_VERDE : C_PRETO;
 				if (coord(t->p_jogador, i, j))
 					mostra(t->jogador, i, j, cor);
 				else if (coord(t->p_adv, i, j))
@@ -123,8 +121,7 @@ int main() {
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
-	Tabuleiro t = novoTab(J_PRETO);
-	t.turno = J_PRETO;
+	Tabuleiro t = novoTab(J_BRANCO);
 	draw(&t);
 	
 	bool sair = false;
