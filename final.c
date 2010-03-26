@@ -77,6 +77,14 @@ void draw(Tabuleiro *t) {
 	SDL_Flip(tela);
 }
 
+void swap(Tabuleiro *t) {
+	t->jogador = adv(*t);
+	t->turno = t->jogador;
+	t->p_jogador ^= t->p_adv;
+	t->p_adv ^= t->p_jogador;
+	t->p_jogador ^= t->p_adv;
+}
+
 bool eventLoop(Tabuleiro *t) {
 	uint64_t destino;
 	SDL_Event e;
@@ -97,7 +105,7 @@ bool eventLoop(Tabuleiro *t) {
 						if (move & destino) {
 							t->p_jogador = move(t->p_jogador, origem, destino);
 							t->p_adv &= ~destino;
-							//t->turno = adv(*t);
+							swap(t);
 						}
 					}
 					move = 0;
