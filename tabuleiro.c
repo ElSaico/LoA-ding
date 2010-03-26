@@ -12,7 +12,7 @@ Tabuleiro novoTab(Jogador in) {
 }
 
 uint64_t moveH(Tabuleiro t, uint64_t or) {
-	if (or & ~t.p_jogador)
+	if (or & ~p_turno(t))
 		return 0;
 	
 	uint64_t l, r, rl, rr;
@@ -32,11 +32,11 @@ uint64_t moveH(Tabuleiro t, uint64_t or) {
 	if (rr)
 		r |= (or - rr) ^ rr;
 
-	return (t.p_adv & r) ? 0 : (rl | rr) & ~t.p_jogador;
+	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
 }
 
 uint64_t moveV(Tabuleiro t, uint64_t or) {
-	if (or & ~t.p_jogador)
+	if (or & ~p_turno(t))
 		return 0;
 	
 	uint64_t l, r, rl, rr;
@@ -56,11 +56,11 @@ uint64_t moveV(Tabuleiro t, uint64_t or) {
 	if (rr)
 		r |= ((or - rr) ^ rr) & l;
 	
-	return (t.p_adv & r) ? 0 : (rl | rr) & ~t.p_jogador;
+	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
 }
 
 uint64_t moveDp(Tabuleiro t, uint64_t or) {
-	if (or & ~t.p_jogador)
+	if (or & ~p_turno(t))
 		return 0;
 	
 	uint64_t i, l, r, rl, rr;
@@ -81,11 +81,11 @@ uint64_t moveDp(Tabuleiro t, uint64_t or) {
 	if (rr)
 		r |= ((or - rr) ^ rr) & l;
 	
-	return (t.p_adv & r) ? 0 : (rl | rr) & ~t.p_jogador;
+	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
 }
 
 uint64_t moveDs(Tabuleiro t, uint64_t or) {
-	if (or & ~t.p_jogador)
+	if (or & ~p_turno(t))
 		return 0;
 	
 	uint64_t i, l, r, rl, rr;
@@ -106,5 +106,5 @@ uint64_t moveDs(Tabuleiro t, uint64_t or) {
 	if (rr)
 		r |= ((or - rr) ^ rr) & l;
 	
-	return (t.p_adv & r) ? 0 : (rl | rr) & ~t.p_jogador;
+	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
 }

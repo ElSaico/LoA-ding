@@ -20,6 +20,8 @@
 #define linha(x) (0xFF00000000000000ULL >> (x << 3))
 #define coluna(x) (0x8080808080808080ULL >> x)
 #define adv(t) ((t).jogador == J_BRANCO ? J_PRETO : J_BRANCO)
+#define p_turno(t) ((t).jogador == (t).turno ? (t).p_jogador : (t).p_adv)
+#define p_turno_adv(t) ((t).jogador == (t).turno ? (t).p_adv : (t).p_jogador)
 
 typedef enum TPlayer {J_BRANCO, J_PRETO} Jogador;
 
