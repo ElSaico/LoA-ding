@@ -22,6 +22,8 @@ Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
 uint64_t move = 0;
 uint64_t origem = 0;
+bool venceu = false;
+Jogador vencedor;
 
 void mostraPreto(int l, int c, Uint32 cor) {
 	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
@@ -66,11 +68,17 @@ void draw(Tabuleiro *t) {
 		}
 		
 		const char *cores[] = {"Branco", "Preto"};
-		uint8_t ncor = t->turno == J_BRANCO ? 0 : 1;
 		const char *jogadores[] = {"Jogador", "Adversario"};
-		uint8_t njogador = t->jogador == t->turno ? 0 : 1;
 		char mensagem[30];
-		sprintf(mensagem, "Turno: %s (%s)", cores[ncor], jogadores[njogador]);
+		if (!venceu) {
+			uint8_t ncor = t->turno == J_BRANCO ? 0 : 1;
+			uint8_t njogador = t->jogador == t->turno ? 0 : 1;
+			sprintf(mensagem, "Turno: %s (%s)", cores[ncor], jogadores[njogador]);
+		} else {
+			uint8_t ncor = vencedor == J_BRANCO ? 0 : 1;
+			uint8_t njogador = t->jogador == vencedor ? 0 : 1;
+			sprintf(mensagem, "%s (%s) venceu!", cores[ncor], jogadores[njogador]);
+		}
 		stringColor(tela, border, vsize-border/2, mensagem, C_PRETO);
 	}
 
@@ -99,24 +107,33 @@ bool eventLoop(Tabuleiro *t) {
 				draw(t);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				if (move) {
-					if (e.button.button == SDL_BUTTON_LEFT) {
-						destino = posXY(e.button.x, e.button.y);
-						if (move & destino) {
-							t->p_jogador = move(t->p_jogador, origem, destino);
-							t->p_adv &= ~destino;
-							swap(t);
+				if (!venceu) {
+					if (move) {
+						if (e.button.button == SDL_BUTTON_LEFT) {
+							destino = posXY(e.button.x, e.button.y);
+							if (move & destino) {
+								t->p_jogador = move(t->p_jogador, origem, destino);
+								t->p_adv &= ~destino;
+								if (vitoria(*t, t->p_jogador)) {
+									venceu = true;
+									vencedor = t->jogador;
+								} else if (vitoria(*t, t->p_adv)) {
+									venceu = true;
+									vencedor = adv(*t);
+								}
+								swap(t);
+							}
 						}
+						move = 0;
+						origem = 0;
+					} else if (t->turno == t->jogador) {
+						origem = coordXY(t->p_jogador, e.button.x, e.button.y);
+						if (origem)
+							move = moveH(*t, origem) | moveV(*t, origem)
+								| moveDp(*t, origem) | moveDs(*t, origem);
 					}
-					move = 0;
-					origem = 0;
-				} else if (t->turno == t->jogador) {
-					origem = coordXY(t->p_jogador, e.button.x, e.button.y);
-					if (origem)
-						move = moveH(*t, origem) | moveV(*t, origem)
-							| moveDp(*t, origem) | moveDs(*t, origem);
+					draw(t);
 				}
-				draw(t);
 				break;
 		}
 	return false;

@@ -108,3 +108,7 @@ uint64_t moveDs(Tabuleiro t, uint64_t or) {
 	
 	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
 }
+
+bool vitoria(Tabuleiro t, Jogador j) {
+	return false;
+}

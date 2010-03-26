@@ -37,5 +37,6 @@ uint64_t moveH(Tabuleiro t, uint64_t or);
 uint64_t moveV(Tabuleiro t, uint64_t or);
 uint64_t moveDp(Tabuleiro t, uint64_t or);
 uint64_t moveDs(Tabuleiro t, uint64_t or);
+bool vitoria(Tabuleiro t, Jogador j);
 
 #endif
