@@ -11,6 +11,8 @@
 #define INIT_PRETO  0x0081818181818100ULL
 #define DIAG_PRI    0x8040201008040201ULL
 #define DIAG_SEC    0x8000000000000000ULL
+#define LIMITE_O    0x7F7F7F7F7F7F7F7FULL
+#define LIMITE_L    0xFEFEFEFEFEFEFEFEULL
 
 #define pos(x,y) (linha(x) & coluna(y))
 #define coord(t,x,y) (t & pos(x, y))
