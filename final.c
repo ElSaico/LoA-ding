@@ -114,10 +114,10 @@ bool eventLoop(Tabuleiro *t) {
 							if (move & destino) {
 								t->p_jogador = move(t->p_jogador, origem, destino);
 								t->p_adv &= ~destino;
-								if (vitoria(*t, t->p_jogador)) {
+								if (vitoria(t->p_jogador)) {
 									venceu = true;
 									vencedor = t->jogador;
-								} else if (vitoria(*t, t->p_adv)) {
+								} else if (vitoria(t->p_adv)) {
 									venceu = true;
 									vencedor = adv(*t);
 								}
@@ -129,8 +129,7 @@ bool eventLoop(Tabuleiro *t) {
 					} else if (t->turno == t->jogador) {
 						origem = coordXY(t->p_jogador, e.button.x, e.button.y);
 						if (origem)
-							move = moveH(*t, origem) | moveV(*t, origem)
-								| moveDp(*t, origem) | moveDs(*t, origem);
+							move = movePara(*t, origem);
 					}
 					draw(t);
 				}
@@ -153,7 +152,6 @@ int main() {
 	while (!sair) {
 		sair = eventLoop(&t);
 		SDL_framerateDelay(&fps);
-		//draw(t); // usar apenas ao atualizar tabuleiro?
 	}
 
 	SDL_Quit();

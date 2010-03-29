@@ -11,104 +11,57 @@ Tabuleiro novoTab(Jogador in) {
 	return t;
 }
 
-uint64_t moveH(Tabuleiro t, uint64_t or) {
-	if (or & ~p_turno(t))
-		return 0;
-	
-	uint64_t l, r, rl, rr;
-	for (int i = 0; i < 8; ++i) {
-		l = linha(i);
-		if (l & or)
-			break;
-	}
-	
-	int c = count(l & grid(t));
-	rl = l & (or << c);
-	rr = l & (or >> c);
-	
-	r = 0;
-	if (rl)
-		r |= (rl - or) ^ or;
-	if (rr)
-		r |= (or - rr) ^ rr;
-
-	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
+uint64_t linhaXY(uint64_t t) {
+	for (int i = 0; i < 8; ++i)
+		if (linha(i) & t)
+			return linha(i);
+	return 0;
 }
 
-uint64_t moveV(Tabuleiro t, uint64_t or) {
-	if (or & ~p_turno(t))
-		return 0;
-	
-	uint64_t l, r, rl, rr;
-	for (int i = 0; i < 8; ++i) {
-		l = coluna(i);
-		if (l & or)
-			break;
-	}
-	
-	int c = count(l & grid(t));
-	rl = or << (8*c);
-	rr = or >> (8*c);
-	
-	r = 0;
-	if (rl)
-		r |= ((rl - or) ^ or) & l;
-	if (rr)
-		r |= ((or - rr) ^ rr) & l;
-	
-	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
+uint64_t colunaXY(uint64_t t) {
+	for (int i = 0; i < 8; ++i)
+		if (coluna(i) & t)
+			return coluna(i);
+	return 0;
 }
 
-uint64_t moveDp(Tabuleiro t, uint64_t or) {
-	if (or & ~p_turno(t))
-		return 0;
-	
-	uint64_t i, l, r, rl, rr;
+uint64_t diagPriXY(uint64_t t) {
+	uint64_t i;
 	uint8_t j;
-	for (i = 0x80, j = 0x80; i <= DIAG_PRI; j = j>>1, i = (i<<8)+j) {
-		l = i;
-		if (l & or)
-			break;
-	}
-	
+	for (i = 0x80, j = 0x80; i <= DIAG_PRI; j = j>>1, i = (i<<8)+j)
+		if (i & t)
+			return i;
+	return 0;
+}
+
+uint64_t diagSecXY(uint64_t t) {
+	uint64_t i;
+	uint8_t j;
+	for (i = 1, j = 1; i <= DIAG_SEC; j = j<<1, i = (i<<8)+j)
+		if (i & t)
+			return i;
+	return 0;
+}
+
+uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t l, int n) {
+	uint64_t r = 0, rl, rr;
 	int c = count(l & grid(t));
-	rl = l & (or << (9*c));
-	rr = l & (or >> (9*c));
+	rl = l & (or << (n*c));
+	rr = l & (or >> (n*c));
 	
-	r = 0;
 	if (rl)
 		r |= ((rl - or) ^ or) & l;
 	if (rr)
 		r |= ((or - rr) ^ rr) & l;
-	
-	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
+
+	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);	
 }
 
-uint64_t moveDs(Tabuleiro t, uint64_t or) {
-	if (or & ~p_turno(t))
-		return 0;
-	
-	uint64_t i, l, r, rl, rr;
-	uint8_t j; // overflow para não ultrapassar a última linha
-	for (i = 1, j = 1; i <= DIAG_SEC; j = j<<1, i = (i<<8)+j) {
-		l = i;
-		if (l & or)
-			break;
-	}
-	
-	int c = count(l & grid(t));
-	rl = l & (or << (7*c));
-	rr = l & (or >> (7*c));
-	
-	r = 0;
-	if (rl)
-		r |= ((rl - or) ^ or) & l;
-	if (rr)
-		r |= ((or - rr) ^ rr) & l;
-	
-	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);
+uint64_t movePara(Tabuleiro t, uint64_t or) {
+	return moveLinha(t, or,   linhaXY(or), 1) | moveLinha(t, or,  colunaXY(or), 8)
+	     | moveLinha(t, or, diagPriXY(or), 9) | moveLinha(t, or, diagSecXY(or), 7);
 }
 
-bool vitoria(Tabuleiro t, Jogador j) {
+bool vitoria(uint64_t t) {
 	return false;
 }
