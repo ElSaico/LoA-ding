@@ -69,14 +69,22 @@ uint64_t adj(uint64_t t) {
 	           | (tl >> 1) | (to >> 7) | (t  >> 8) | (tl >> 9));
 }
 
-bool vitoria(uint64_t t) {
-	uint64_t p, r = 0;
-	for (p = 1; p; p <<= 1)
-		if (p & t)
-			break;
-	while (p) {
-		r |= p;
-		p = t & adj(r);
+int nGrupos(uint64_t t) {
+	int n = 0;
+	uint64_t p, r;
+	while (t) {
+		p = (t & (t-1)) ^ t;
+		r = 0;
+		while (p) {
+			r |= p;
+			p = t & adj(r);
+		}
+		t = t & ~r;
+		n++;
 	}
-	return r == t;
+	return n;
+}
+
+bool vitoria(uint64_t t) {
+	return nGrupos(t) == 1;
 }
