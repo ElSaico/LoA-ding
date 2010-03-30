@@ -6,7 +6,7 @@ int eval(uint64_t t) {
 	return 0;
 }
 
-int minimax(uint64_t* or, uint64_t* d, Tabuleiro ti, Jogador j, int n, int alfa, int beta) {
+int minimax(uint64_t* or, uint64_t* dst, Tabuleiro ti, Jogador j, int n, int alfa, int beta) {
 	if (n == 0) {
 		if (vitoria(pecas(ti, j)))
 			return INT_MAX;
@@ -27,10 +27,11 @@ int minimax(uint64_t* or, uint64_t* d, Tabuleiro ti, Jogador j, int n, int alfa,
 			t.p_jogador = ti.p_jogador;
 			t.p_adv = ti.p_adv;
 			move(&t, p, d);
-			alfa = max(alfa, -minimax(or, d, t, adv(j), n-1, -beta, -alfa));
+			// mover or=p e dst=d para cá?
+			alfa = max(alfa, -minimax(or, dst, t, adv(j), n-1, -beta, -alfa));
 			if (alfa >= beta) {
 				*or = p;
-				*d = d;
+				*dst = d;
 				return alfa;
 			}
 			d0 &= ~d;
@@ -38,10 +39,11 @@ int minimax(uint64_t* or, uint64_t* d, Tabuleiro ti, Jogador j, int n, int alfa,
 		p0 &= ~p;
 	}
 	*or = p;
-	*d = d;
+	*dst = d;
 	return alfa;
 }
 
 int negamax(uint64_t* or, uint64_t* d, Tabuleiro t) {
-	return minimax(or, d, t, adv(t.jogador), 3, INT_MIN, INT_MAX);
+	// retornar captura de peça?
+	return minimax(or, d, t, adv(t.jogador), 5, INT_MIN, INT_MAX);
 }

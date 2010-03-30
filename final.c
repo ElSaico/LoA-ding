@@ -12,15 +12,19 @@
 #define coordXY(t,x,y) coord(t, posline(vsize, y), posline(hsize, x))
 #define posXY(x,y) pos(posline(vsize, y), posline(hsize, x))
 
-#define C_BRANCO 0xFFFFFFFF
-#define C_PRETO  0x000000FF
-#define C_CINZA  0x777777FF
-#define C_VERDE  0x00FF00FF
+#define C_BRANCO   0xFFFFFFFF
+#define C_PRETO    0x000000FF
+#define C_CINZA    0x777777FF
+#define C_VERMELHO 0xFF0000FF
+#define C_VERDE    0x00FF00FF
+#define C_AZUL     0x0000FFFF
 
 const Sint16 border = 50;
 Sint16 hsize = 640;
 Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
+uint64_t mover_adv = 0;
+uint64_t origem_adv = 0;
 uint64_t mover = 0;
 uint64_t origem = 0;
 bool venceu = false;
@@ -54,8 +58,12 @@ void draw(Tabuleiro *t) {
 			for (int j = 0; j < 8; ++j) {
 				if (coord(mover, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
-					       linepos(hsize, j+1), linepos(vsize, i+1), C_CINZA);
-				cor = coord(origem, i, j) ? C_VERDE : C_PRETO;
+					       linepos(hsize, j+1), linepos(vsize, i+1), C_AZUL);
+				else if (coord(origem_adv, i, j))
+					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
+					       linepos(hsize, j+1), linepos(vsize, i+1), C_VERMELHO);
+				cor = coord(origem, i, j) ? C_AZUL : C_PRETO;
+				cor |= coord(mover_adv, i, j) ? C_VERMELHO : C_PRETO;
 				if (coord(t->p_jogador, i, j))
 					mostra(t->jogador, i, j, cor);
 				else if (coord(t->p_adv, i, j))
@@ -117,11 +125,20 @@ bool eventLoop(Tabuleiro *t) {
 								if (vitoria(t->p_jogador)) {
 									venceu = true;
 									vencedor = t->jogador;
+									return false;
 								} else if (vitoria(t->p_adv)) {
 									venceu = true;
 									vencedor = adv(t->jogador);
+									return false;
 								}
-								swap(t);
+								mover = 0;
+								t->turno = adv(t->jogador);
+								draw(t);
+								origem_adv = 0;
+								mover_adv = 0;
+								negamax(&origem_adv, &mover_adv, *t);
+								move(t, origem_adv, mover_adv);
+								t->turno = t->jogador;								
 							}
 						}
 						mover = 0;
