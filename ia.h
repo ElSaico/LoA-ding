@@ -3,4 +3,4 @@
 #define max(x,y) ((x) > (y) ? (x) : (y))
 
 int eval(uint64_t t);
-uint64_t negamax(uint64_t or, uint64_t d, Tabuleiro t);
+int negamax(uint64_t* or, uint64_t* d, Tabuleiro t);
