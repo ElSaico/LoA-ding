@@ -133,9 +133,9 @@ bool eventLoop(Tabuleiro *t) {
 								}
 								mover = 0;
 								t->turno = adv(t->jogador);
-								draw(t);
 								origem_adv = 0;
 								mover_adv = 0;
+								draw(t);
 								negamax(&origem_adv, &mover_adv, *t);
 								move(t, origem_adv, mover_adv);
 								t->turno = t->jogador;								
