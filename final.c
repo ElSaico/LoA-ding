@@ -3,6 +3,7 @@
 #include <SDL/SDL_framerate.h>
 #include <SDL/SDL_gfxPrimitives.h>
 
+#include "ia.h"
 #include "tabuleiro.h"
 
 #define posline(l,x) (x-border)*8/(l-2*border)
@@ -20,7 +21,7 @@ const Sint16 border = 50;
 Sint16 hsize = 640;
 Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
-uint64_t move = 0;
+uint64_t mover = 0;
 uint64_t origem = 0;
 bool venceu = false;
 Jogador vencedor;
@@ -51,14 +52,14 @@ void draw(Tabuleiro *t) {
 			characterColor(tela, border/2, linepos(vsize, i+0.5), i+'1', C_PRETO);
 			characterColor(tela, linepos(hsize, i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
-				if (coord(move, i, j))
+				if (coord(mover, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_CINZA);
 				cor = coord(origem, i, j) ? C_VERDE : C_PRETO;
 				if (coord(t->p_jogador, i, j))
 					mostra(t->jogador, i, j, cor);
 				else if (coord(t->p_adv, i, j))
-					mostra(adv(*t), i, j, cor);
+					mostra(adv(t->jogador), i, j, cor);
 				}
 		}
 		
@@ -86,7 +87,7 @@ void draw(Tabuleiro *t) {
 }
 
 void swap(Tabuleiro *t) {
-	t->jogador = adv(*t);
+	t->jogador = adv(t->jogador);
 	t->turno = t->jogador;
 	t->p_jogador ^= t->p_adv;
 	t->p_adv ^= t->p_jogador;
@@ -108,28 +109,27 @@ bool eventLoop(Tabuleiro *t) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (!venceu) {
-					if (move) {
+					if (mover) {
 						if (e.button.button == SDL_BUTTON_LEFT) {
 							destino = posXY(e.button.x, e.button.y);
-							if (move & destino) {
-								t->p_jogador = move(t->p_jogador, origem, destino);
-								t->p_adv &= ~destino;
+							if (mover & destino) {
+								move(t, origem, destino);
 								if (vitoria(t->p_jogador)) {
 									venceu = true;
 									vencedor = t->jogador;
 								} else if (vitoria(t->p_adv)) {
 									venceu = true;
-									vencedor = adv(*t);
+									vencedor = adv(t->jogador);
 								}
 								swap(t);
 							}
 						}
-						move = 0;
+						mover = 0;
 						origem = 0;
 					} else if (t->turno == t->jogador) {
 						origem = coordXY(t->p_jogador, e.button.x, e.button.y);
 						if (origem)
-							move = movePara(*t, origem);
+							mover = movePara(*t, origem);
 					}
 					draw(t);
 				}

@@ -54,7 +54,7 @@ uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t l, int n) {
 	if (rr)
 		r |= ((or - rr) ^ rr) & l;
 
-	return (p_turno_adv(t) & r) ? 0 : (rl | rr) & ~p_turno(t);	
+	return (pecas(t, adv(t.turno)) & r) ? 0 : (rl | rr) & ~pecas(t, t.turno);	
 }
 
 uint64_t movePara(Tabuleiro t, uint64_t or) {
@@ -79,7 +79,7 @@ int nGrupos(uint64_t t) {
 			r |= p;
 			p = t & adj(r);
 		}
-		t = t & ~r;
+		t &= ~r;
 		n++;
 	}
 	return n;
@@ -87,4 +87,14 @@ int nGrupos(uint64_t t) {
 
 bool vitoria(uint64_t t) {
 	return nGrupos(t) == 1;
+}
+
+void move(Tabuleiro* t, uint64_t or, uint64_t d) {
+	if (t->turno == t->jogador) {
+		t->p_jogador = (or | d) ^ t->p_jogador;
+		t->p_adv &= ~d;
+	} else {
+		t->p_adv = (or | d) ^ t->p_adv;
+		t->p_jogador &= ~d;
+	}
 }

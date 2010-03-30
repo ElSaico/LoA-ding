@@ -1,4 +1,4 @@
-OBJS = tabuleiro.o final.o
+OBJS = tabuleiro.o final.o ia.o
 
 SRCS = $(OBJS,.o=.c)
 
