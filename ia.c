@@ -3,16 +3,17 @@
 #include "ia.h"
 
 int eval(Tabuleiro t, Jogador j) {
+	t.turno = j;
 	uint64_t pc = pecas(t, j);
 	uint64_t pca = pecas(t, adv(j));
 	
-	/*uint64_t p, p0 = pc, pa0 = pca;
+	uint64_t p, p0 = pc, pa0 = pca;
 	int gl = 0, gla = 0;
 	while (p0) {
 		p = (p0 & (p0-1)) ^ p0;
 		gl += count(movePara(t, p));
 		p0 &= ~p;
-	}*/
+	}
 	
 	//printf("%d\n", gl);
 	if (vitoria(pc))
@@ -20,7 +21,7 @@ int eval(Tabuleiro t, Jogador j) {
 	else if (vitoria(pca))
 		return INT_MIN;
 	else
-		return 1000*nGrupos(pca) + 500*(8-nGrupos(pc)) /*+ 100*gl*/;
+		return 500*(13-nGrupos(pc)) - 1000*(13-nGrupos(pca)) + 250*gl;
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
@@ -60,7 +61,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 		while (d0) {
 			d = (d0 & (d0-1)) ^ d0;
 			move(&t, p, d);
-			m0 = -minimax(t, t.jogador, 4, INT_MIN, INT_MAX);
+			m0 = -minimax(t, t.jogador, 3, INT_MIN, INT_MAX);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
