@@ -1,6 +1,9 @@
+#ifndef _IA_H
+#define _IA_H
+
 #include "tabuleiro.h"
 
-#define max(x,y) ((x) > (y) ? (x) : (y))
+int eval(Tabuleiro t, Jogador j);
+int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t);
 
-int eval(uint64_t t);
-int negamax(uint64_t* or, uint64_t* d, Tabuleiro t);
+#endif

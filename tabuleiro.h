@@ -35,6 +35,7 @@ typedef struct tab {
 Tabuleiro novoTab(Jogador in);
 void move(Tabuleiro* t, uint64_t or, uint64_t d);
 uint64_t movePara(Tabuleiro t, uint64_t or);
+int nGrupos(uint64_t t);
 bool vitoria(uint64_t t);
 
 #endif

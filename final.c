@@ -94,14 +94,6 @@ void draw(Tabuleiro *t) {
 	SDL_Flip(tela);
 }
 
-void swap(Tabuleiro *t) {
-	t->jogador = adv(t->jogador);
-	t->turno = t->jogador;
-	t->p_jogador ^= t->p_adv;
-	t->p_adv ^= t->p_jogador;
-	t->p_jogador ^= t->p_adv;
-}
-
 bool eventLoop(Tabuleiro *t) {
 	uint64_t destino;
 	SDL_Event e;
@@ -125,10 +117,18 @@ bool eventLoop(Tabuleiro *t) {
 								if (vitoria(t->p_jogador)) {
 									venceu = true;
 									vencedor = t->jogador;
+									mover = 0;
+									origem_adv = 0;
+									mover_adv = 0;
+									draw(t);
 									return false;
 								} else if (vitoria(t->p_adv)) {
 									venceu = true;
 									vencedor = adv(t->jogador);
+									mover = 0;
+									origem_adv = 0;
+									mover_adv = 0;
+									draw(t);
 									return false;
 								}
 								mover = 0;
@@ -138,6 +138,25 @@ bool eventLoop(Tabuleiro *t) {
 								draw(t);
 								negamax(&origem_adv, &mover_adv, *t);
 								move(t, origem_adv, mover_adv);
+								printf("%+3d %016llx %016llx\n", eval(*t, t->turno),
+								                             origem_adv, mover_adv);
+								if (vitoria(t->p_jogador)) {
+									venceu = true;
+									vencedor = t->jogador;
+									mover = 0;
+									origem_adv = 0;
+									mover_adv = 0;
+									draw(t);
+									return false;
+								} else if (vitoria(t->p_adv)) {
+									venceu = true;
+									vencedor = adv(t->jogador);
+									mover = 0;
+									origem_adv = 0;
+									mover_adv = 0;
+									draw(t);
+									return false;
+								}
 								t->turno = t->jogador;								
 							}
 						}
