@@ -10,20 +10,30 @@ uint64_t rand64() {
 
 void initHash() {
 	srand(time(NULL));
-	for (int i = 0; i < 64; ++i) {
+	for (int i = 0; i < 65; ++i) {
 		hash[0][i] = rand64();
 		hash[1][i] = rand64();
 	}
 }
 
-int getHash(Tabuleiro t) {
-	return 0;
+uint64_t getHash(Tabuleiro t, Jogador j) {
+	int i;
+	uint64_t k, h = hash[j][0];
+	for (i = 1, k = 1; i <= 64; ++i, k <<= 1) {
+		if (k & t.p_jogador)
+			h ^= hash[t.jogador][i];
+		if (k & t.p_adv)
+			h ^= hash[adv(t.jogador)][i];
+	}
+	//printf("%lld\n", h % TSIZE);
+	return h;
 }
 
-int lerHash(Tabuleiro t, int n, int alfa, int beta) {
-	/*Trans* v = &trans[getHash(t) % TSIZE];
+int lerHash(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+	Trans* v = &trans[getHash(t, j) % TSIZE];
+	//printf("L %p %016llx %016llx %d\n", v, v->hash, getHash(t, j), v->ply);
 	
-	if (v->hash == getHash(t)) {
+	if (v->hash == getHash(t, j)) {
 		if (v->ply >= n) {
 			if (v->flag == H_FOLHA)
 				return v->eval;
@@ -32,18 +42,19 @@ int lerHash(Tabuleiro t, int n, int alfa, int beta) {
 			if ((v->flag == H_BETA) && (v->eval >= beta))
 				return beta;
 		}
-	}*/
+	}
     
 	return HASH_NULL;
 }
 
 void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
-	Trans* v = &trans[getHash(t) % TSIZE];
-	v->hash = getHash(t);
-	v->move = pecas(t, j);
+	Trans* v = &trans[getHash(t, j) % TSIZE];
+	v->hash = getHash(t, j);
+	v->tab = t;
 	v->eval = val;
 	v->flag = flag;
 	v->ply = n;
+	//printf("G %p %016llx %d\n", v, v->hash, v->ply);
 }
 
 int eval(Tabuleiro t, Jogador j) {
@@ -51,7 +62,7 @@ int eval(Tabuleiro t, Jogador j) {
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
-	int val = lerHash(t, n, alfa, beta);
+	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
 	if (n == 0) {

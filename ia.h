@@ -3,20 +3,20 @@
 
 #include "tabuleiro.h"
 
-#define TSIZE 32768
+#define TSIZE 131072
 #define HASH_NULL 777
 
-typedef enum {H_ALFA, H_BETA, H_FOLHA} HashFlag;
+typedef enum THFlag {H_ALFA, H_BETA, H_FOLHA} HashFlag;
 
 typedef struct {
 	uint64_t hash;
 	int ply;
 	HashFlag flag;
 	int eval;
-	uint64_t move;
+	Tabuleiro tab;
 } Trans;
 
-uint64_t hash[2][64];
+uint64_t hash[2][65]; // [i][0] = turno
 Trans trans[TSIZE];
 
 void initHash();
