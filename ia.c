@@ -7,21 +7,30 @@ int eval(Tabuleiro t, Jogador j) {
 	uint64_t pc = pecas(t, j);
 	uint64_t pca = pecas(t, adv(j));
 	
-	uint64_t p, p0 = pc, pa0 = pca;
+	uint64_t p, p0;
 	int gl = 0, gla = 0;
+	
+	p0 = pc;
 	while (p0) {
 		p = (p0 & (p0-1)) ^ p0;
 		gl += count(movePara(t, p));
 		p0 &= ~p;
 	}
 	
-	//printf("%d\n", gl);
-	if (vitoria(pc))
+	p0 = pca;
+	while (p0) {
+		p = (p0 & (p0-1)) ^ p0;
+		gla += count(movePara(t, p));
+		p0 &= ~p;
+	}
+	
+	uint64_t gc = nGrupos(pc), gca = nGrupos(pca);
+	if (gc == 1)
 		return INT_MAX;
-	else if (vitoria(pca))
+	else if (gca == 1)
 		return INT_MIN;
 	else
-		return 500*(13-nGrupos(pc)) - 1000*(13-nGrupos(pca)) + 250*gl;
+		return 1000*(13-gc) - 1500*(13-gca) + 250*gl - 500*gla;
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
