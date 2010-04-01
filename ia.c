@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <limits.h>
+#include <time.h>
 #include "ia.h"
 
 int eval(Tabuleiro t, Jogador j) {
