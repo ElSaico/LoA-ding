@@ -177,8 +177,8 @@ int main() {
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
-	Tabuleiro t = novoTab(J_PRETO);
-	//jogarPC(&t);
+	Tabuleiro t = novoTab(J_BRANCO);
+	jogarPC(&t);
 	draw(&t);
 	
 	bool sair = false;
