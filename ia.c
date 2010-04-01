@@ -3,24 +3,7 @@
 #include "ia.h"
 
 int eval(Tabuleiro t, Jogador j) {
-	uint64_t pc = pecas(t, j);
-	uint64_t pca = pecas(t, adv(j));
-	
-	/*uint64_t p, p0 = pc, pa0 = pca;
-	int gl = 0, gla = 0;
-	while (p0) {
-		p = (p0 & (p0-1)) ^ p0;
-		gl += count(movePara(t, p));
-		p0 &= ~p;
-	}*/
-	
-	//printf("%d\n", gl);
-	if (vitoria(pc))
-		return INT_MAX;
-	else if (vitoria(pca))
-		return INT_MIN;
-	else
-		return 1000*nGrupos(pca) + 500*(8-nGrupos(pc)) /*+ 100*gl*/;
+	return 0;
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
