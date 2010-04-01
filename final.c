@@ -136,10 +136,10 @@ bool eventLoop(Tabuleiro *t) {
 								origem_adv = 0;
 								mover_adv = 0;
 								draw(t);
-								negamax(&origem_adv, &mover_adv, *t);
+								int n = negamax(&origem_adv, &mover_adv, *t);
 								move(t, origem_adv, mover_adv);
-								printf("%+3d %016llx %016llx\n", eval(*t, t->turno),
-								                             origem_adv, mover_adv);
+								printf("%+3d %016llx %016llx\n", n,
+								        origem_adv, mover_adv);
 								if (vitoria(t->p_jogador)) {
 									venceu = true;
 									vencedor = t->jogador;
