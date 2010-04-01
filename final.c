@@ -94,6 +94,35 @@ void draw(Tabuleiro *t) {
 	SDL_Flip(tela);
 }
 
+void jogarPC(Tabuleiro *t) {
+	t->turno = adv(t->jogador);
+	mover = 0;
+	origem_adv = 0;
+	mover_adv = 0;
+	draw(t);
+	int n = negamax(&origem_adv, &mover_adv, *t);
+	move(t, origem_adv, mover_adv);
+	printf("%+3d %016llx %016llx\n", n, origem_adv, mover_adv);
+	t->turno = t->jogador;								
+}
+
+bool verificaVitoria(Tabuleiro *t) {
+	if (vitoria(t->p_jogador)) {
+		vencedor = t->jogador;
+		mover = 0;
+		origem_adv = 0;
+		mover_adv = 0;
+		return true;
+	} else if (vitoria(t->p_adv)) {
+		vencedor = adv(t->jogador);
+		mover = 0;
+		origem_adv = 0;
+		mover_adv = 0;
+		return true;
+	}
+	return false;
+}
+
 bool eventLoop(Tabuleiro *t) {
 	uint64_t destino;
 	SDL_Event e;
@@ -114,50 +143,17 @@ bool eventLoop(Tabuleiro *t) {
 							destino = posXY(e.button.x, e.button.y);
 							if (mover & destino) {
 								move(t, origem, destino);
-								if (vitoria(t->p_jogador)) {
-									venceu = true;
-									vencedor = t->jogador;
-									mover = 0;
-									origem_adv = 0;
-									mover_adv = 0;
-									draw(t);
-									return false;
-								} else if (vitoria(t->p_adv)) {
-									venceu = true;
-									vencedor = adv(t->jogador);
-									mover = 0;
-									origem_adv = 0;
-									mover_adv = 0;
+								venceu = verificaVitoria(t);
+								if (venceu) {
 									draw(t);
 									return false;
 								}
-								mover = 0;
-								t->turno = adv(t->jogador);
-								origem_adv = 0;
-								mover_adv = 0;
-								draw(t);
-								int n = negamax(&origem_adv, &mover_adv, *t);
-								move(t, origem_adv, mover_adv);
-								printf("%+3d %016llx %016llx\n", n,
-								        origem_adv, mover_adv);
-								if (vitoria(t->p_jogador)) {
-									venceu = true;
-									vencedor = t->jogador;
-									mover = 0;
-									origem_adv = 0;
-									mover_adv = 0;
-									draw(t);
-									return false;
-								} else if (vitoria(t->p_adv)) {
-									venceu = true;
-									vencedor = adv(t->jogador);
-									mover = 0;
-									origem_adv = 0;
-									mover_adv = 0;
+								jogarPC(t);
+								venceu = verificaVitoria(t);
+								if (venceu) {
 									draw(t);
 									return false;
 								}
-								t->turno = t->jogador;								
 							}
 						}
 						mover = 0;
@@ -182,6 +178,7 @@ int main() {
 	SDL_initFramerate(&fps);
 	
 	Tabuleiro t = novoTab(J_PRETO);
+	//jogarPC(&t);
 	draw(&t);
 	
 	bool sair = false;
