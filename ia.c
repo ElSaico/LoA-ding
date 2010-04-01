@@ -105,6 +105,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 }
 
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
+	clock_t init = clock();
 	int m = INT_MIN, m0;
 	uint64_t p = 0, d = 0, d0, p0;
 	Tabuleiro tt = t;
@@ -128,5 +129,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 		}
 		p0 &= ~p;
 	}
+	
+	printf("Tempo: %.2lf segundos.\n", (clock()-init) / (float)CLOCKS_PER_SEC);
 	return m;
 }
