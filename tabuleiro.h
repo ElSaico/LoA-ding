@@ -3,9 +3,11 @@
 
 #include <stdint.h>
 
-#define bool uint8_t
 #define false 0
 #define true 1
+
+#define J_BRANCO 0
+#define J_PRETO 1
 
 #define INIT_BRANCO 0x0081818181818100ULL
 #define INIT_PRETO  0x7E0000000000007EULL
@@ -23,8 +25,8 @@
 #define adv(t) (t == J_BRANCO ? J_PRETO : J_BRANCO)
 #define pecas(t,j) ((t).jogador == j ? (t).p_jogador : (t).p_adv)
 
-typedef enum TPlayer {J_BRANCO, J_PRETO} Jogador;
-
+typedef uint8_t Jogador;
+typedef uint8_t bool;
 typedef struct tab {
 	uint64_t p_jogador;
 	uint64_t p_adv;
