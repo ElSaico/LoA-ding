@@ -6,9 +6,11 @@ int eval(Tabuleiro t, Jogador j) {
 	return 0;
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
-	if (n == 0)
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
+	if (n == 0) {
+		t.turno = j;
 		return eval(t, j);
+	}
 	
 	int a0 = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
@@ -20,11 +22,13 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 		p = (p0 & (p0-1)) ^ p0;
 		d0 = movePara(t, p);
 		while (d0) {
+			if (desde(tm) >= 4.99)
+				return alfa;
 			d = (d0 & (d0-1)) ^ d0;
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			a0 = -minimax(tt, adv(j), n-1, -beta, -alfa);
+			a0 = -minimax(tt, adv(j), n-1, -beta, -alfa, tm);
 			if (a0 > alfa)
 				alfa = a0;
 			if (alfa >= beta)
@@ -51,7 +55,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, t.jogador, 3, INT_MIN, INT_MAX);
+			m0 = -minimax(tt, t.jogador, nmax, INT_MIN, INT_MAX, init);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
@@ -62,6 +66,9 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 		p0 &= ~p;
 	}
 	
-	printf("Tempo: %.2lf segundos.\n", (clock()-init) / (float)CLOCKS_PER_SEC);
+	double s = desde(init);
+	printf("Nivel: %d~%d. Tempo: %.2lf segundos.\n", nmin, nmax, s);
+	if (s < 5)
+		++nmax;
 	return m;
 }
