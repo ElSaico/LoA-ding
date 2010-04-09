@@ -5,7 +5,7 @@
 
 #define desde(t) ((clock()-(t)) / (float)CLOCKS_PER_SEC)
 
-static int nmin = 3, nmax = 3;
+static int nmax = 3;
 
 int eval(Tabuleiro t, Jogador j);
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t);
