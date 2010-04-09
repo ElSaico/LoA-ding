@@ -61,18 +61,19 @@ int eval(Tabuleiro t, Jogador j) {
 	return 0;
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
 	if (n == 0) {
+		t.turno = j;
 		val = eval(t, j);
 		gravarHash(t, j, n, val, H_FOLHA);
 		return val;
 	}
 	
 	HashFlag flag = H_ALFA;
-	int a0 = alfa;
+	int a0 = alfa, an = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
 	Tabuleiro tt = t;
 	t.turno = j;
@@ -82,14 +83,23 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 		p = (p0 & (p0-1)) ^ p0;
 		d0 = movePara(t, p);
 		while (d0) {
+			if (desde(tm) >= 4.99) {
+				if (alfa == a0) {
+					val = eval(t, j);
+					gravarHash(t, j, n, val, H_FOLHA);
+					return val;
+				} else {
+				 	return alfa;
+				}
+			}
 			d = (d0 & (d0-1)) ^ d0;
-			move(&tt, p, d);
-			a0 = -minimax(tt, adv(j), n-1, -beta, -alfa);
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
-			if (a0 > alfa) {
+			move(&tt, p, d);
+			an = -minimax(tt, adv(j), n-1, -beta, -alfa, tm);
+			if (an > alfa) {
 				flag = H_FOLHA;
-				alfa = a0;
+				alfa = an;
 			}
 			if (alfa >= beta) {
 				gravarHash(t, j, n, beta, H_BETA);
@@ -106,7 +116,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	clock_t init = clock();
-	int m = INT_MIN, m0;
+	int m = INT_MIN+1, m0;
 	uint64_t p = 0, d = 0, d0, p0;
 	Tabuleiro tt = t;
 	
@@ -119,7 +129,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, t.jogador, 3, INT_MIN, INT_MAX);
+			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m, init);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
@@ -130,6 +140,9 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 		p0 &= ~p;
 	}
 	
-	printf("Tempo: %.2lf segundos.\n", (clock()-init) / (float)CLOCKS_PER_SEC);
+	double s = desde(init);
+	printf("Nivel: 1~%d. Tempo: %.2lf segundos.\n", nmax, s);
+	if (s < 5)
+		++nmax;
 	return m;
 }
