@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 #include "ia.h"
 
 int eval(Tabuleiro t, Jogador j) {
-	return 0;
+	return vitoria(pecas(t, j)) ? INT_MAX : rand();
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
@@ -41,6 +43,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 }
 
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
+	srand(time(NULL));
 	clock_t init = clock();
 	int m = INT_MIN+1, m0;
 	uint64_t p = 0, d = 0, d0, p0;
