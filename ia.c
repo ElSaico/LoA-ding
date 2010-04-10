@@ -113,7 +113,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 			if (desde(tm) >= 4.99) {
 				if (alfa == a0) {
 					val = eval(t, j);
-					gravarHash(t, j, n, val, H_FOLHA);
+					gravarHash(t, j, 0, val, H_FOLHA);
 					return val;
 				} else {
 				 	return alfa;
