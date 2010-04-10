@@ -1,6 +1,7 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <limits.h>
+#include <time.h>
 #include "ia.h"
 
 uint64_t rand64() {
@@ -58,7 +59,7 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 }
 
 int eval(Tabuleiro t, Jogador j) {
-	return 0;
+	return vitoria(pecas(t, j)) ? INT_MAX : rand();
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
