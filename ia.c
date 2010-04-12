@@ -62,7 +62,7 @@ int eval(Tabuleiro t, Jogador j) {
 	return vitoria(pecas(t, j)) ? INT_MAX : rand();
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, clock_t tm) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
@@ -76,6 +76,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 	HashFlag flag = H_ALFA;
 	int a0 = alfa, an = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
+	bool dirtyAdv = false;
 	Tabuleiro tt = t;
 	t.turno = j;
 	
@@ -85,6 +86,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 		d0 = movePara(t, p);
 		while (d0) {
 			if (desde(tm) >= 4.99) {
+				*dirty = true;
 				if (alfa == a0) {
 					val = eval(t, j);
 					gravarHash(t, j, 0, val, H_FOLHA);
@@ -97,13 +99,16 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			an = -minimax(tt, adv(j), n-1, -beta, -alfa, tm);
+			an = -minimax(tt, adv(j), n-1, -beta, -alfa, &dirtyAdv, tm);
+			if (dirtyAdv)
+				*dirty = true;
 			if (an > alfa) {
 				flag = H_FOLHA;
 				alfa = an;
 			}
 			if (alfa >= beta) {
-				gravarHash(t, j, n, beta, H_BETA);
+				if (!(*dirty))
+					gravarHash(t, j, n, beta, H_BETA);
 				return alfa;
 			}
 			d0 &= ~d;
@@ -111,7 +116,8 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, clock_t tm) {
 		p0 &= ~p;
 	}
 	
-	gravarHash(t, j, n, alfa, flag);
+	if (!(*dirty))
+		gravarHash(t, j, n, alfa, flag);
 	return alfa;
 }
 
@@ -119,6 +125,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	clock_t init = clock();
 	int m = INT_MIN+1, m0;
 	uint64_t p = 0, d = 0, d0, p0;
+	bool dirty;
 	Tabuleiro tt = t;
 	
 	p0 = pecas(t, t.turno);
@@ -130,7 +137,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m, init);
+			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m, &dirty, init);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
