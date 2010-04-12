@@ -1,6 +1,7 @@
 #ifndef _IA_H
 #define _IA_H
 
+#include <time.h>
 #include "tabuleiro.h"
 
 #define TSIZE 131072
