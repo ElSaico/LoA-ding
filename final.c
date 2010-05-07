@@ -170,19 +170,61 @@ bool eventLoop(Tabuleiro *t) {
 	return false;
 }
 
+void drawInicial() {
+	SDL_FillRect(tela, NULL, C_BRANCO);
+	stringColor(tela, 25,  25, "LoA-ding - minimal lines, maximum action", C_PRETO);
+	stringColor(tela, 25,  50, "Autor: Bruno Marques", C_PRETO);
+	stringColor(tela, 25, 100, "Pressione P para jogar com as peças pretas", C_PRETO);
+	stringColor(tela, 25, 125, "Pressione B para jogar com as peças brancas", C_PRETO);
+	SDL_Flip(tela);
+}
+
+bool telaInicial(Jogador *j) {
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+		switch (e.type) {
+			case SDL_QUIT:
+				SDL_Quit();
+				exit(EXIT_SUCCESS);
+			case SDL_KEYUP:
+				switch (e.key.keysym.sym) {
+					case SDLK_p:
+						*j = J_PRETO;
+						return true;
+					case SDLK_b:
+						*j = J_BRANCO;
+						return true;
+					default: break;
+				}
+				break;
+		}
+	return false;
+}
+
 int main() {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);
+	tela = SDL_SetVideoMode(400, 150, 16, SDL_SWSURFACE);
 	SDL_WM_SetCaption("LoA-ding", NULL);
 	FPSmanager fps;
 	SDL_initFramerate(&fps);
 	
 	initHash();
-	Tabuleiro t = novoTab(J_BRANCO);
-	jogarPC(&t);
+	drawInicial();
+	
+	Jogador j;
+	bool sair = false;
+	while (!sair) {
+		sair = telaInicial(&j);
+		SDL_framerateDelay(&fps);		
+	}
+	
+	Tabuleiro t = novoTab(j);
+	if (j == J_BRANCO)
+		jogarPC(&t);
+	tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);
 	draw(&t);
 	
-	bool sair = false;
+	sair = false;
 	while (!sair) {
 		sair = eventLoop(&t);
 		SDL_framerateDelay(&fps);
