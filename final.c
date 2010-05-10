@@ -174,8 +174,8 @@ void drawInicial() {
 	SDL_FillRect(tela, NULL, C_BRANCO);
 	stringColor(tela, 25,  25, "LoA-ding - minimal lines, maximum action", C_PRETO);
 	stringColor(tela, 25,  50, "Autor: Bruno Marques", C_PRETO);
-	stringColor(tela, 25, 100, "Pressione P para jogar com as peças pretas", C_PRETO);
-	stringColor(tela, 25, 125, "Pressione B para jogar com as peças brancas", C_PRETO);
+	stringColor(tela, 25, 100, "Pressione P para jogar com as pretas", C_PRETO);
+	stringColor(tela, 25, 125, "Pressione B para jogar com as brancas", C_PRETO);
 	SDL_Flip(tela);
 }
 
