@@ -43,18 +43,21 @@ uint64_t diagSecXY(uint64_t t) {
 	return 0;
 }
 
-uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t l, int n) {
-	uint64_t r = 0, rl, rr;
-	int c = count(l & grid(t));
-	rl = l & (or << (n*c));
-	rr = l & (or >> (n*c));
+uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {
+	uint64_t r = 0, l = 0, rl, rr, p, ret = 0;
+	int c = count(ln & grid(t));
+	rl = ln & (or << (n*c));
+	rr = ln & (or >> (n*c));
 	
 	if (rl)
-		r |= ((rl - or) ^ or) & l;
+		l = ((rl - or) ^ or) & ln;
 	if (rr)
-		r |= ((or - rr) ^ rr) & l;
+		r = ((or - rr) ^ rr) & ln;
 
-	return (pecas(t, adv(t.turno)) & r) ? 0 : (rl | rr) & ~pecas(t, t.turno);	
+	p = pecas(t, adv(t.turno));
+	ret |= p & r ? 0 : rr;
+	ret |= p & l ? 0 : rl;
+	return ret & ~pecas(t, t.turno);
 }
 
 uint64_t movePara(Tabuleiro t, uint64_t or) {
