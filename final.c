@@ -53,7 +53,7 @@ void draw(Tabuleiro *t) {
 	if (hsize >= 2*border && vsize >= 2*border) {
 		Uint32 cor;
 		for (int i = 0; i < 8; ++i) {
-			characterColor(tela, border/2, linepos(vsize, i+0.5), i+'1', C_PRETO);
+			characterColor(tela, border/2, linepos(vsize, i+0.5), '8'-i, C_PRETO);
 			characterColor(tela, linepos(hsize, i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
 				if (coord(mover, i, j))
