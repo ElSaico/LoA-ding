@@ -85,7 +85,7 @@ int eval(Tabuleiro t, Jogador j) {
 	else if (gca == 1)
 		return INT_MIN;
 	else
-		return 1000*(13-gc) - 1500*(13-gca) + 250*gl - 500*gla;
+		return 2000*(13-gc) - 1500*(13-gca) + 200*gl - 150*gla;
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, clock_t tm) {
@@ -176,7 +176,9 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	
 	double s = desde(init);
 	printf("Nivel: 1~%d. Tempo: %.2lf segundos.\n", nmax, s);
-	if (s < 5)
+	if (s <= 3.5)
 		++nmax;
+	if (s >= 4.99)
+		--nmax;
 	return m;
 }
