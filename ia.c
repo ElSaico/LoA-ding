@@ -61,7 +61,7 @@ int eval(Tabuleiro t, Jogador j) {
 	return 0;
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, clock_t tm) {
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
@@ -73,9 +73,8 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, cloc
 	}
 	
 	HashFlag flag = H_ALFA;
-	int a0 = alfa, an = alfa;
+	int an = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
-	bool dirtyAdv = false;
 	Tabuleiro tt = t;
 	t.turno = j;
 	
@@ -84,30 +83,17 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, cloc
 		p = (p0 & (p0-1)) ^ p0;
 		d0 = movePara(t, p);
 		while (d0) {
-			if (desde(tm) >= 4.99) {
-				*dirty = true;
-				if (alfa == a0) {
-					val = eval(t, j);
-					gravarHash(t, j, 0, val, H_FOLHA);
-					return val;
-				} else {
-				 	return alfa;
-				}
-			}
 			d = (d0 & (d0-1)) ^ d0;
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			an = -minimax(tt, adv(j), n-1, -beta, -alfa, &dirtyAdv, tm);
-			if (dirtyAdv)
-				*dirty = true;
+			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
 			if (an > alfa) {
 				flag = H_FOLHA;
 				alfa = an;
 			}
 			if (alfa >= beta) {
-				if (!(*dirty))
-					gravarHash(t, j, n, beta, H_BETA);
+				gravarHash(t, j, n, beta, H_BETA);
 				return alfa;
 			}
 			d0 &= ~d;
@@ -115,8 +101,7 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, bool *dirty, cloc
 		p0 &= ~p;
 	}
 	
-	if (!(*dirty))
-		gravarHash(t, j, n, alfa, flag);
+	gravarHash(t, j, n, alfa, flag);
 	return alfa;
 }
 
@@ -124,7 +109,6 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	clock_t init = clock();
 	int m = INT_MIN+1, m0;
 	uint64_t p = 0, d = 0, d0, p0;
-	bool dirty;
 	Tabuleiro tt = t;
 	
 	p0 = pecas(t, t.turno);
@@ -136,7 +120,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m, &dirty, init);
+			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
@@ -148,8 +132,6 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	}
 	
 	double s = desde(init);
-	printf("Nivel: 1~%d. Tempo: %.2lf segundos.\n", nmax, s);
-	if (s < 5)
-		++nmax;
+	printf("Tempo: %.2lf segundos.\n", s);
 	return m;
 }

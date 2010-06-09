@@ -1,3 +1,5 @@
+from tabuleiro import *
+
 def evalTab(t, j):
 	return 0
 
@@ -9,7 +11,8 @@ def minimax(t, j, n, alfa, beta):
 	a0 = alfa
 	p = 0
 	d = 0
-	tt = t
+	tt = Tabuleiro(t.jogador)
+	tt.turno = t.turno
 	t.turno = j
 	
 	p0 = t.pecas[j]
@@ -32,11 +35,12 @@ def minimax(t, j, n, alfa, beta):
 	return alfa
 
 def negamax(t):
-	nmin = 1000000
+	nmin = -1000000
 	m = nmin
 	p = 0
 	d = 0
-	tt = t
+	tt = Tabuleiro(t.jogador)
+	tt.turno = t.turno
 	
 	p0 = t.pecas[t.turno]
 	org = 0
