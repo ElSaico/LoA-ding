@@ -59,7 +59,11 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 }
 
 int eval(Tabuleiro t, Jogador j) {
-	return vitoria(pecas(t, j)) ? INT_MAX : rand();
+	if (vitoria(pecas(t, j)))
+		return INT_MAX;
+	if (vitoria(pecas(t, adv(j))))
+		return INT_MIN+1;
+	return abs(rand());
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
