@@ -20,10 +20,10 @@ uint64_t getHash(Tabuleiro t, Jogador j) {
 	int i;
 	uint64_t k, h = hash[j][0];
 	for (i = 1, k = 1; i <= 64; ++i, k <<= 1) {
-		if (k & t.p_jogador)
-			h ^= hash[t.jogador][i];
-		if (k & t.p_adv)
-			h ^= hash[adv(t.jogador)][i];
+		if (k & t.pecas[J_BRANCO])
+			h ^= hash[J_BRANCO][i];
+		if (k & t.pecas[J_PRETO])
+			h ^= hash[J_PRETO][i];
 	}
 	//printf("%lld\n", h % TSIZE);
 	return h;
@@ -105,14 +105,14 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	Tabuleiro tt = t;
 	t.turno = j;
 	
-	p0 = pecas(t, j);
+	p0 = t.pecas[j];
 	while (p0) {
 		p = (p0 & (p0-1)) ^ p0;
 		d0 = movePara(t, p);
 		while (d0) {
 			d = (d0 & (d0-1)) ^ d0;
-			tt.p_jogador = t.p_jogador;
-			tt.p_adv = t.p_adv;
+			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
+			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
 			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
 			if (an >= beta) {
@@ -138,14 +138,14 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 	uint64_t p = 0, d = 0, d0, p0;
 	Tabuleiro tt = t;
 	
-	p0 = pecas(t, t.turno);
+	p0 = t.pecas[t.turno];
 	while (p0) {
 		p = (p0 & (p0-1)) ^ p0;
 		d0 = movePara(t, p);
 		while (d0) {
 			d = (d0 & (d0-1)) ^ d0;
-			tt.p_jogador = t.p_jogador;
-			tt.p_adv = t.p_adv;
+			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
+			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
 			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa);
 			if (m0 >= beta) {
