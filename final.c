@@ -43,13 +43,6 @@ void mostraBranco(int l, int c, Uint32 cor) {
 	              0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
 }
 
-void mostra(Jogador j, int l, int c, Uint32 cor) {
-	if (j == J_PRETO)
-		mostraPreto(l, c, cor);
-	else
-		mostraBranco(l, c, cor);
-}
-
 void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 	SDL_FillRect(tela, NULL, C_BRANCO);
 	
@@ -67,10 +60,10 @@ void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_VERMELHO);
 				cor = coord(m.origem, i, j) ? C_AZUL : C_PRETO;
 				cor |= coord(m.destino_adv, i, j) ? C_VERMELHO : C_PRETO;
-				if (coord(t->p_jogador, i, j))
-					mostra(t->jogador, i, j, cor);
-				else if (coord(t->p_adv, i, j))
-					mostra(adv(t->jogador), i, j, cor);
+				if (coord(t->pecas[J_BRANCO], i, j))
+					mostraBranco(i, j, cor);
+				else if (coord(t->pecas[J_PRETO], i, j))
+					mostraPreto(i, j, cor);
 				}
 		}
 		
@@ -109,15 +102,8 @@ void jogarPC(Tabuleiro *t, Movimentos *m) {
 	t->turno = t->jogador;								
 }
 
-bool verificaVitoria(Tabuleiro *t, Movimentos *m, Jogador *vencedor) {
-	if (vitoria(t->p_jogador)) {
-		*vencedor = t->jogador;
-		m->mov_validos = 0;
-		m->origem_adv = 0;
-		m->destino_adv = 0;
-		return true;
-	} else if (vitoria(t->p_adv)) {
-		*vencedor = adv(t->jogador);
+bool verificaVitoria(Tabuleiro *t, Movimentos *m, Jogador j) {
+	if (vitoria(t->pecas[j])) {
 		m->mov_validos = 0;
 		m->origem_adv = 0;
 		m->destino_adv = 0;
@@ -146,22 +132,32 @@ bool eventLoop(Tabuleiro *t, Movimentos *m) {
 						m->destino = posXY(e.button.x, e.button.y);
 						if (m->mov_validos & m->destino) {
 							move(t, m->origem, m->destino);
-							venceu = verificaVitoria(t, m, &vencedor);
+							venceu = verificaVitoria(t, m, t->jogador);
 							if (venceu) {
-								draw(t, *m, true, vencedor);
+								draw(t, *m, true, t->jogador);
+								return false;
+							}
+							venceu = verificaVitoria(t, m, adv(t->jogador));
+							if (venceu) {
+								draw(t, *m, true, adv(t->jogador));
 								return false;
 							}
 							jogarPC(t, m);
-							venceu = verificaVitoria(t, m, &vencedor);
+							venceu = verificaVitoria(t, m, adv(t->jogador));
 							if (venceu) {
-								draw(t, *m, true, vencedor);
+								draw(t, *m, true, adv(t->jogador));
+								return false;
+							}
+							venceu = verificaVitoria(t, m, t->jogador);
+							if (venceu) {
+								draw(t, *m, true, t->jogador);
 								return false;
 							}
 						}
 						m->mov_validos = 0;
 						m->origem = 0;
 					} else if (t->turno == t->jogador) {
-						m->origem = coordXY(t->p_jogador, e.button.x, e.button.y);
+						m->origem = coordXY(t->pecas[t->jogador], e.button.x, e.button.y);
 						if (m->origem)
 							m->mov_validos = movePara(*t, m->origem);
 					}
@@ -221,7 +217,7 @@ int main() {
 	}
 	
 	Tabuleiro t = novoTab(j);
-	Movimentos m;
+	Movimentos m = {0, 0, 0, 0, 0};
 	if (j == J_BRANCO)
 		jogarPC(&t, &m);
 	tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);

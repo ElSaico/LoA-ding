@@ -4,8 +4,8 @@
 
 Tabuleiro novoTab(Jogador in) {
 	Tabuleiro t;
-	t.p_jogador = in == J_BRANCO ? INIT_BRANCO : INIT_PRETO;
-	t.p_adv = in == J_BRANCO ? INIT_PRETO : INIT_BRANCO;
+	t.pecas[J_BRANCO] = INIT_BRANCO;
+	t.pecas[J_PRETO]  = INIT_PRETO;
 	t.jogador = in;
 	t.turno = J_PRETO;
 	return t;
@@ -54,10 +54,10 @@ uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {
 	if (rr)
 		r = ((or - rr) ^ rr) & ln;
 
-	p = pecas(t, adv(t.turno));
+	p = t.pecas[adv(t.turno)];
 	ret |= p & r ? 0 : rr;
 	ret |= p & l ? 0 : rl;
-	return ret & ~pecas(t, t.turno);
+	return ret & ~t.pecas[t.turno];
 }
 
 uint64_t movePara(Tabuleiro t, uint64_t or) {
@@ -93,11 +93,6 @@ bool vitoria(uint64_t t) {
 }
 
 void move(Tabuleiro* t, uint64_t or, uint64_t d) {
-	if (t->turno == t->jogador) {
-		t->p_jogador = (or | d) ^ t->p_jogador;
-		t->p_adv &= ~d;
-	} else {
-		t->p_adv = (or | d) ^ t->p_adv;
-		t->p_jogador &= ~d;
-	}
+	t->pecas[t->turno] = (or | d) ^ t->pecas[t->turno];
+	t->pecas[adv(t->turno)] &= ~d;
 }

@@ -14,21 +14,19 @@
 #define pos(x,y) (linha(x) & coluna(y))
 #define coord(t,x,y) (t & pos(x, y))
 #define count(x) __builtin_popcountll(x)
-#define grid(t) (t.p_jogador ^ t.p_adv)
+#define grid(t) (t.pecas[J_BRANCO] ^ t.pecas[J_PRETO])
 #define linha(x) (0xFF00000000000000ULL >> ((x) << 3))
 #define coluna(x) (0x8080808080808080ULL >> (x))
 #define adv(t) (t == J_BRANCO ? J_PRETO : J_BRANCO)
-#define pecas(t,j) ((t).jogador == j ? (t).p_jogador : (t).p_adv)
 
 typedef enum {
-	J_BRANCO,
-	J_PRETO,
+	J_BRANCO = 0,
+	J_PRETO = 1,
 	J_NENHUM
 } Jogador;
 
 typedef struct tab {
-	uint64_t p_jogador;
-	uint64_t p_adv;
+	uint64_t pecas[2];
 	Jogador jogador;
 	Jogador turno;
 } Tabuleiro;
