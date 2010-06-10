@@ -21,8 +21,9 @@
 #define pecas(t,j) ((t).jogador == j ? (t).p_jogador : (t).p_adv)
 
 typedef enum {
-	J_BRANCO = 0,
-	J_PRETO = 1
+	J_BRANCO,
+	J_PRETO,
+	J_NENHUM
 } Jogador;
 
 typedef struct tab {

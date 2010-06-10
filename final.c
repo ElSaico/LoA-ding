@@ -6,6 +6,14 @@
 #include "ia.h"
 #include "tabuleiro.h"
 
+typedef struct {
+	uint64_t mov_validos;
+	uint64_t origem;
+	uint64_t origem_adv;
+	uint64_t destino;
+	uint64_t destino_adv;
+} Movimentos;
+
 #define posline(l,x) (x-border)*8/(l-2*border)
 #define linepos(x,y) border+(y)*(x-2*border)/8
 #define sizepos(x) (x-2*border)/16
@@ -22,13 +30,8 @@
 const Sint16 border = 50;
 Sint16 hsize = 640;
 Sint16 vsize = 480;
+
 SDL_Surface *tela = NULL;
-uint64_t mover_adv = 0;
-uint64_t origem_adv = 0;
-uint64_t mover = 0;
-uint64_t origem = 0;
-bool venceu = false;
-Jogador vencedor;
 
 void mostraPreto(int l, int c, Uint32 cor) {
 	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
@@ -47,7 +50,7 @@ void mostra(Jogador j, int l, int c, Uint32 cor) {
 		mostraBranco(l, c, cor);
 }
 
-void draw(Tabuleiro *t) {
+void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 	SDL_FillRect(tela, NULL, C_BRANCO);
 	
 	if (hsize >= 2*border && vsize >= 2*border) {
@@ -56,14 +59,14 @@ void draw(Tabuleiro *t) {
 			characterColor(tela, border/2, linepos(vsize, i+0.5), '8'-i, C_PRETO);
 			characterColor(tela, linepos(hsize, i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
-				if (coord(mover, i, j))
+				if (coord(m.mov_validos, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_AZUL);
-				else if (coord(origem_adv, i, j))
+				else if (coord(m.origem_adv, i, j))
 					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
 					       linepos(hsize, j+1), linepos(vsize, i+1), C_VERMELHO);
-				cor = coord(origem, i, j) ? C_AZUL : C_PRETO;
-				cor |= coord(mover_adv, i, j) ? C_VERMELHO : C_PRETO;
+				cor = coord(m.origem, i, j) ? C_AZUL : C_PRETO;
+				cor |= coord(m.destino_adv, i, j) ? C_VERMELHO : C_PRETO;
 				if (coord(t->p_jogador, i, j))
 					mostra(t->jogador, i, j, cor);
 				else if (coord(t->p_adv, i, j))
@@ -76,8 +79,8 @@ void draw(Tabuleiro *t) {
 			vlineColor(tela, linepos(hsize, i), border, vsize-border, C_PRETO);
 		}
 		
-		const char *cores[] = {"Branco", "Preto"};
-		const char *jogadores[] = {"Jogador", "Adversario"};
+		static const char *cores[] = {"Branco", "Preto"};
+		static const char *jogadores[] = {"Jogador", "Adversario"};
 		char mensagem[30];
 		if (!venceu) {
 			uint8_t ncor = t->turno == J_BRANCO ? 0 : 1;
@@ -94,37 +97,38 @@ void draw(Tabuleiro *t) {
 	SDL_Flip(tela);
 }
 
-void jogarPC(Tabuleiro *t) {
+void jogarPC(Tabuleiro *t, Movimentos *m) {
 	t->turno = adv(t->jogador);
-	mover = 0;
-	origem_adv = 0;
-	mover_adv = 0;
-	draw(t);
-	int n = negamax(&origem_adv, &mover_adv, *t);
-	move(t, origem_adv, mover_adv);
-	printf("%+3d %016llx %016llx\n", n, origem_adv, mover_adv);
+	m->mov_validos = 0;
+	m->origem_adv = 0;
+	m->destino_adv = 0;
+	draw(t, *m, false, J_NENHUM);
+	int n = negamax(&m->origem_adv, &m->destino_adv, *t);
+	move(t, m->origem_adv, m->destino_adv);
+	printf("%+3d %016llx %016llx\n", n, m->origem_adv, m->destino_adv);
 	t->turno = t->jogador;								
 }
 
-bool verificaVitoria(Tabuleiro *t) {
+bool verificaVitoria(Tabuleiro *t, Movimentos *m, Jogador *vencedor) {
 	if (vitoria(t->p_jogador)) {
-		vencedor = t->jogador;
-		mover = 0;
-		origem_adv = 0;
-		mover_adv = 0;
+		*vencedor = t->jogador;
+		m->mov_validos = 0;
+		m->origem_adv = 0;
+		m->destino_adv = 0;
 		return true;
 	} else if (vitoria(t->p_adv)) {
-		vencedor = adv(t->jogador);
-		mover = 0;
-		origem_adv = 0;
-		mover_adv = 0;
+		*vencedor = adv(t->jogador);
+		m->mov_validos = 0;
+		m->origem_adv = 0;
+		m->destino_adv = 0;
 		return true;
 	}
 	return false;
 }
 
-bool eventLoop(Tabuleiro *t) {
-	uint64_t destino;
+bool eventLoop(Tabuleiro *t, Movimentos *m) {
+	static bool venceu = false;
+	static Jogador vencedor;
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 		switch (e.type) {
@@ -134,36 +138,34 @@ bool eventLoop(Tabuleiro *t) {
 				hsize = e.resize.w;
 				vsize = e.resize.h;
 				tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);
-				draw(t);
+				draw(t, *m, venceu, vencedor);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (!venceu) {
-					if (mover) {
-						if (e.button.button == SDL_BUTTON_LEFT) {
-							destino = posXY(e.button.x, e.button.y);
-							if (mover & destino) {
-								move(t, origem, destino);
-								venceu = verificaVitoria(t);
-								if (venceu) {
-									draw(t);
-									return false;
-								}
-								jogarPC(t);
-								venceu = verificaVitoria(t);
-								if (venceu) {
-									draw(t);
-									return false;
-								}
+					if ((e.button.button == SDL_BUTTON_LEFT) && m->mov_validos) {
+						m->destino = posXY(e.button.x, e.button.y);
+						if (m->mov_validos & m->destino) {
+							move(t, m->origem, m->destino);
+							venceu = verificaVitoria(t, m, &vencedor);
+							if (venceu) {
+								draw(t, *m, true, vencedor);
+								return false;
+							}
+							jogarPC(t, m);
+							venceu = verificaVitoria(t, m, &vencedor);
+							if (venceu) {
+								draw(t, *m, true, vencedor);
+								return false;
 							}
 						}
-						mover = 0;
-						origem = 0;
+						m->mov_validos = 0;
+						m->origem = 0;
 					} else if (t->turno == t->jogador) {
-						origem = coordXY(t->p_jogador, e.button.x, e.button.y);
-						if (origem)
-							mover = movePara(*t, origem);
+						m->origem = coordXY(t->p_jogador, e.button.x, e.button.y);
+						if (m->origem)
+							m->mov_validos = movePara(*t, m->origem);
 					}
-					draw(t);
+					draw(t, *m, venceu, vencedor);
 				}
 				break;
 		}
@@ -219,14 +221,15 @@ int main() {
 	}
 	
 	Tabuleiro t = novoTab(j);
+	Movimentos m;
 	if (j == J_BRANCO)
-		jogarPC(&t);
+		jogarPC(&t, &m);
 	tela = SDL_SetVideoMode(hsize, vsize, 16, SDL_RESIZABLE);
-	draw(&t);
+	draw(&t, m, false, J_NENHUM);
 	
 	sair = false;
 	while (!sair) {
-		sair = eventLoop(&t);
+		sair = eventLoop(&t, &m);
 		SDL_framerateDelay(&fps);
 	}
 
