@@ -105,9 +105,9 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	return alfa;
 }
 
-int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
+int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 	clock_t init = clock();
-	int m = INT_MIN+1, m0;
+	int m0;
 	uint64_t p = 0, d = 0, d0, p0;
 	Tabuleiro tt = t;
 	
@@ -120,9 +120,14 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN+1, -m);
-			if (m0 > m) {
-				m = m0;
+			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa);
+			if (m0 >= beta) {
+				*or = p;
+				*dst = d;
+				return m0;
+			}
+			if (m0 > alfa) {
+				alfa = m0;
 				*or = p;
 				*dst = d;
 			}
@@ -133,5 +138,31 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 	
 	double s = desde(init);
 	printf("Tempo: %.2lf segundos.\n", s);
-	return m;
+	return alfa;
+}
+
+int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
+	return minimax_root(or, dst, t, INT_MIN+1, INT_MAX);
+}
+
+int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro t, int f) {
+	int g = f, beta;
+	int upperBound = INT_MAX;
+	int lowerBound = INT_MIN;
+	uint64_t o, d;
+	while (lowerBound < upperBound) {
+		if (g == lowerBound)
+			beta = g+1;
+		else
+			beta = g;
+		g = minimax_root(&o, &d, t, beta-1, beta);
+		if (g < beta)
+			upperBound = g;
+		else {
+			*or = o;
+			*dst = d;
+			lowerBound = g;
+		}
+	}
+	return g;
 }
