@@ -59,8 +59,8 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 
 int eval(Tabuleiro t, Jogador j) {
 	t.turno = j;
-	uint64_t pc = pecas(t, j);
-	uint64_t pca = pecas(t, adv(j));
+	uint64_t pc = t.pecas[j];
+	uint64_t pca = t.pecas[adv(j)];
 	
 	uint64_t p, p0;
 	int gl = 0, gla = 0;
@@ -83,7 +83,7 @@ int eval(Tabuleiro t, Jogador j) {
 	if (gc == 1)
 		return INT_MAX;
 	else if (gca == 1)
-		return INT_MIN;
+		return INT_MIN+1;
 	else
 		return 2000*(13-gc) - 1500*(13-gca) + 200*gl - 150*gla;
 }
