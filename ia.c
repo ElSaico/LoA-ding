@@ -88,13 +88,13 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
 			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
+			if (an >= beta) {
+				gravarHash(t, j, n, an, H_BETA);
+				return an;
+			}
 			if (an > alfa) {
 				flag = H_FOLHA;
 				alfa = an;
-			}
-			if (alfa >= beta) {
-				gravarHash(t, j, n, beta, H_BETA);
-				return alfa;
 			}
 			d0 &= ~d;
 		}
@@ -120,7 +120,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
 			tt.p_jogador = t.p_jogador;
 			tt.p_adv = t.p_adv;
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN, -m);
+			m0 = -minimax(tt, adv(t.turno), nmax, INT_MIN+1, -m);
 			if (m0 > m) {
 				m = m0;
 				*or = p;
