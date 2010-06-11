@@ -58,21 +58,21 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 	//printf("G %p %016llx %d\n", v, v->hash, v->ply);
 }
 
-int eval(Tabuleiro t, Jogador j) {
-	if (vitoria(t.pecas[j]))
+int eval(Tabuleiro t, Jogador j, Jogador v) {
+	if (v == j)
 		return INT_MAX;
-	if (vitoria(t.pecas[adv(j)]))
+	if (v == adv(j))
 		return INT_MIN+1;
 	return abs(rand());
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
-	if (n == 0) {
+	if ((n == 0) || (v != J_NENHUM)) {
 		t.turno = j;
-		val = eval(t, j);
+		val = eval(t, j, v);
 		gravarHash(t, j, n, val, H_FOLHA);
 		return val;
 	}
@@ -92,7 +92,13 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
-			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
+			if (vitoria(tt.pecas[adv(j)]))
+				v = adv(j);
+			else if (vitoria(tt.pecas[j]))
+				v = j;
+			else
+				v = J_NENHUM;
+			an = -minimax(tt, adv(j), n-1, -beta, -alfa, v);
 			if (an >= beta) {
 				gravarHash(t, j, n, an, H_BETA);
 				return an;
@@ -125,7 +131,7 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa);
+			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa, J_NENHUM);
 			if (m0 >= beta) {
 				*or = p;
 				*dst = d;
@@ -163,11 +169,27 @@ int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro t, int f) {
 		g = minimax_root(&o, &d, t, beta-1, beta);
 		if (g < beta)
 			upperBound = g;
-		else {
-			*or = o;
-			*dst = d;
+		else
 			lowerBound = g;
-		}
+		*or = o;
+		*dst = d;
 	}
 	return g;
 }
+
+/*int negascout(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+	if (n == 0)
+		return eval(t, j);
+	int a, b = beta;
+	foreach child of node {
+		a = -negascout (child, adv(j), n-1, -b, -alfa);
+		if ((alfa < a) && (a < beta))
+			a = -negascout(child, adv(j), n-1, -beta, -alfa);
+		if (a > alfa)
+			alfa = a;
+		if (alfa >= beta)
+			return alfa;
+		b = alfa + 1;
+	}
+	return alfa;
+}*/
