@@ -25,7 +25,7 @@ Trans trans[TSIZE];
 static int nmax = 3;
 
 void initHash();
-int eval(Tabuleiro t, Jogador j);
+int eval(Tabuleiro t, Jogador j, Jogador v);
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t);
 int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro t, int f);
 
