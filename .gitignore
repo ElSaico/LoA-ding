@@ -1,3 +1,9 @@
 *.o
-final
 *.pyc
+# Linux
+final
+# Windows
+final.exe
+SDL.dll
+stdout.txt
+stderr.txt
