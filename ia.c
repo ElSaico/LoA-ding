@@ -58,12 +58,34 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 	//printf("G %p %016llx %d\n", v, v->hash, v->ply);
 }
 
+int distMedia(uint64_t t) {
+	int pl[12], pc[12], pml = 0, pmc = 0;
+	int b, ib, c = count(t);
+	for (int i = 0; i < c; ++i) {
+		b = t & -t;
+		ib = indiceBit(b);
+		pl[i] = linhaPos(ib);
+		pml += pl[i];
+		pc[i] = colunaPos(ib);
+		pmc += pc[i];
+		t ^= b;
+	}
+	pml /= c;
+	pmc /= c;
+	int dm = 0;
+	for (int i = 0; i < c; ++i)
+		dm += max(abs(pl[i]-pml), abs(pc[i]-pmc));
+	return dm / c;
+}
+
 int eval(Tabuleiro t, Jogador j, Jogador v) {
 	if (v == j)
 		return INT_MAX;
 	if (v == adv(j))
 		return INT_MIN+1;
-	return abs(rand());
+	uint64_t pj = t.pecas[j];
+	uint64_t pa = t.pecas[adv(j)];
+	return 500*nGrupos(pa)-1500*nGrupos(pj)-1000*distMedia(pa)+1000*distMedia(pj);
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {

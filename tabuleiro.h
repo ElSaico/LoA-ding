@@ -11,6 +11,7 @@
 #define LIMITE_O    0x7F7F7F7F7F7F7F7FULL
 #define LIMITE_L    0xFEFEFEFEFEFEFEFEULL
 
+#define max(x,y) ((x) > (y) ? (x) : (y))
 #define pos(x,y) (0x8000000000000000ULL >> (((x) << 3)+(y)))
 #define coord(t,x,y) (t & pos(x, y))
 #define count(x) __builtin_popcountll(x)
