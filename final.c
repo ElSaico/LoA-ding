@@ -199,7 +199,7 @@ bool telaInicial(Jogador *j) {
 	return false;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	tela = SDL_SetVideoMode(400, 150, 16, SDL_SWSURFACE);
 	SDL_WM_SetCaption("LoA-ding", NULL);
