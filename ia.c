@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
+#include <math.h>
 #include "ia.h"
 
 uint64_t rand64() {
@@ -59,8 +60,11 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 }
 
 int distMedia(uint64_t t) {
-	int pl[12], pc[12], pml = 0, pmc = 0;
-	int b, ib, c = count(t);
+	//printf("%016llx ", t);
+	int ib, c = count(t);
+	int pl[12], pc[12];
+	double pml = 0, pmc = 0;
+	uint64_t b;
 	for (int i = 0; i < c; ++i) {
 		b = t & -t;
 		ib = indiceBit(b);
@@ -72,10 +76,11 @@ int distMedia(uint64_t t) {
 	}
 	pml /= c;
 	pmc /= c;
-	int dm = 0;
+	double dm = 0;
 	for (int i = 0; i < c; ++i)
-		dm += max(abs(pl[i]-pml), abs(pc[i]-pmc));
-	return dm / c;
+		dm += max(fabs(pl[i]-pml), fabs(pc[i]-pmc));
+	//printf("%d %.2f %.2f %.3f\n", c, pml, pmc, dm/c);
+	return (int)(1000*dm / c);
 }
 
 int eval(Tabuleiro t, Jogador j, Jogador v) {
@@ -85,7 +90,8 @@ int eval(Tabuleiro t, Jogador j, Jogador v) {
 		return INT_MIN+1;
 	uint64_t pj = t.pecas[j];
 	uint64_t pa = t.pecas[adv(j)];
-	return 500*nGrupos(pa)-1500*nGrupos(pj)-1000*distMedia(pa)+1000*distMedia(pj);
+	//printf("%016llx %016llx\n", pj, pa);
+	return 500*nGrupos(pa)-1500*nGrupos(pj)+1000*distMedia(pa)-1000*distMedia(pj);
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {

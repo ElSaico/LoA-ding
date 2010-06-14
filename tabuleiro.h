@@ -19,7 +19,7 @@
 #define linha(x) (0xFF00000000000000ULL >> ((x) << 3))
 #define coluna(x) (0x8080808080808080ULL >> (x))
 #define adv(t) (t == J_BRANCO ? J_PRETO : J_BRANCO)
-#define linhaPos(t) ((t) & 0x0111)
+#define linhaPos(t) ((t) & 0x07)
 #define colunaPos(t) ((t) >> 3)
 
 typedef enum {
