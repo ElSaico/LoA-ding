@@ -65,9 +65,9 @@ int distMedia(uint64_t t) {
 	for (int i = 0; i < c; ++i) {
 		b = t & -t;
 		ib = indiceBit(b);
-		pl[i] = linhaPos(ib);
+		pl[i] = posLinha(ib);
 		pml += pl[i];
-		pc[i] = colunaPos(ib);
+		pc[i] = posColuna(ib);
 		pmc += pc[i];
 		t ^= b;
 	}
