@@ -55,6 +55,17 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 	v->ply = n;
 }
 
+int movimentos(Tabuleiro t, uint64_t p0) {
+	int gl = 0;
+	uint64_t p;
+	while (p0) {
+		p = p0 & -p0;
+		gl += count(movePara(t, p));
+		p0 &= ~p;
+	}
+	return gl;
+}
+
 int eval(Tabuleiro t, Jogador j, Jogador v) {
 	if (v == j)
 		return INT_MAX;
@@ -63,25 +74,8 @@ int eval(Tabuleiro t, Jogador j, Jogador v) {
 	
 	uint64_t pc = t.pecas[j];
 	uint64_t pca = t.pecas[adv(j)];
-	
-	uint64_t p, p0;
-	int gl = 0, gla = 0;
-	
-	p0 = pc;
-	while (p0) {
-		p = (p0 & (p0-1)) ^ p0;
-		gl += count(movePara(t, p));
-		p0 &= ~p;
-	}
-	
-	p0 = pca;
-	while (p0) {
-		p = (p0 & (p0-1)) ^ p0;
-		gla += count(movePara(t, p));
-		p0 &= ~p;
-	}
-	
-	return 2000*(13-nGrupos(pc)) - 1500*(13-nGrupos(pca)) + 200*gl - 150*gla;
+	return 200*(13-nGrupos(pc))  - 150*(13-nGrupos(pca))
+	     + 200*movimentos(t, pc) - 150*movimentos(t, pca);
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
