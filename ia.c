@@ -66,25 +66,20 @@ int movimentos(Tabuleiro t, uint64_t p0) {
 	return gl;
 }
 
-int eval(Tabuleiro t, Jogador j, Jogador v) {
-	if (v == j)
-		return INT_MAX;
-	if (v == adv(j))
-		return INT_MIN+1;
-	
+int eval(Tabuleiro t, Jogador j) {
 	uint64_t pc = t.pecas[j];
 	uint64_t pca = t.pecas[adv(j)];
 	return 200*(13-nGrupos(pc))  - 150*(13-nGrupos(pca))
 	     + 200*movimentos(t, pc) - 150*movimentos(t, pca);
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
+int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
-	if ((n == 0) || (v != J_NENHUM)) {
+	if (n == 0) {
 		t.turno = j;
-		val = eval(t, j, v);
+		val = eval(t, j);
 		gravarHash(t, j, n, val, H_FOLHA);
 		return val;
 	}
@@ -104,13 +99,16 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
-			if (vitoria(tt.pecas[adv(j)]))
-				v = adv(j);
-			else if (vitoria(tt.pecas[j]))
-				v = j;
-			else
-				v = J_NENHUM;
-			an = -minimax(tt, adv(j), n-1, -beta, -alfa, v);
+			if (vitoria(tt.pecas[adv(j)])) {
+				gravarHash(tt, j, n-1, INT_MIN+1, H_FOLHA);
+				gravarHash(tt, adv(j), n-1, INT_MAX, H_FOLHA);
+				return INT_MIN+1;
+			} else if (vitoria(tt.pecas[j])) {
+				gravarHash(tt, j, n-1, INT_MAX, H_FOLHA);
+				gravarHash(tt, adv(j), n-1, INT_MIN+1, H_FOLHA);
+				return INT_MAX;
+			}
+			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
 			if (an >= beta) {
 				gravarHash(t, j, n, an, H_BETA);
 				return an;
@@ -143,7 +141,7 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa, J_NENHUM);
+			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa);
 			if (m0 >= beta) {
 				*or = p;
 				*dst = d;
