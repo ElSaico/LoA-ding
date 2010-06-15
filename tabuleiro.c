@@ -12,35 +12,29 @@ Tabuleiro novoTab(Jogador in) {
 }
 
 uint64_t linhaXY(uint64_t t) {
-	for (int i = 0; i < 8; ++i)
-		if (linha(i) & t)
-			return linha(i);
-	return 0;
+	return linha(posLinha(indiceBit(t)));
 }
 
 uint64_t colunaXY(uint64_t t) {
-	for (int i = 0; i < 8; ++i)
-		if (coluna(i) & t)
-			return coluna(i);
-	return 0;
+	return coluna(posColuna(indiceBit(t)));
 }
 
 uint64_t diagPriXY(uint64_t t) {
-	uint64_t i;
-	uint8_t j;
-	for (i = 0x80, j = 0x80; i <= DIAG_PRI; j >>= 1, i = (i<<8)+j)
-		if (i & t)
-			return i;
-	return 0;
+	int ib = indiceBit(t);
+	int lc = posLinha(ib) - posColuna(ib);
+	if (lc >= 0)
+		return DIAG_PRI >> (8*lc);
+	else
+		return DIAG_PRI << (8*-lc);
 }
 
 uint64_t diagSecXY(uint64_t t) {
-	uint64_t i;
-	uint8_t j;
-	for (i = 1, j = 1; i <= DIAG_SEC; j <<= 1, i = (i<<8)+j)
-		if (i & t)
-			return i;
-	return 0;
+	int ib = indiceBit(t);
+	int lc = posLinha(ib) + posColuna(ib) - 7;
+	if (lc >= 0)
+		return DIAG_SEC >> (8*lc);
+	else
+		return DIAG_SEC << (8*-lc);
 }
 
 uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {
@@ -95,4 +89,19 @@ bool vitoria(uint64_t t) {
 void move(Tabuleiro* t, uint64_t or, uint64_t d) {
 	t->pecas[t->turno] = (or | d) ^ t->pecas[t->turno];
 	t->pecas[adv(t->turno)] &= ~d;
+}
+
+// descobre posição de bit, via sequência de De Bruijn
+// a entrada precisa ter APENAS UM bit ligado, senão avacalha tudo
+uint8_t indiceBit(uint64_t t) {
+	static const uint64_t deBruijn = 0x022fdd63cc95386d;
+	static const uint8_t offsets[] = {0,  1,  2, 53,  3,  7, 54, 27,
+	                                  4, 38, 41,  8, 34, 55, 48, 28,
+	                                 62,  5, 39, 46, 44, 42, 22,  9,
+	                                 24, 35, 59, 56, 49, 18, 29, 11,
+	                                 63, 52,  6, 26, 37, 40, 33, 47,
+	                                 61, 45, 43, 21, 23, 58, 17, 10,
+	                                 51, 25, 36, 32, 60, 20, 57, 16,
+	                                 50, 31, 19, 15, 30, 14, 13, 12};
+	return offsets[(t * deBruijn) >> 58];
 }

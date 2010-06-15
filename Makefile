@@ -12,3 +12,9 @@ final: $(OBJS)
 
 clean:
 	rm -f final *.o
+
+win: $(OBJS)
+	gcc -o final.exe $(OBJS) -lmingw32 -lSDLmain -lSDL_gfx -lSDL
+	
+win-clean:
+	rm -f final.exe *.o
