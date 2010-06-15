@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <time.h>
 #include <math.h>
+
 #include "ia.h"
 
 uint64_t rand64() {
@@ -27,13 +28,11 @@ uint64_t getHash(Tabuleiro t, Jogador j) {
 		if (k & t.pecas[J_PRETO])
 			h ^= hash[J_PRETO][i];
 	}
-	//printf("%lld\n", h % TSIZE);
 	return h;
 }
 
 int lerHash(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	Trans* v = &trans[getHash(t, j) % TSIZE];
-	//printf("L %p %016llx %016llx %d\n", v, v->hash, getHash(t, j), v->ply);
 	
 	if (v->hash == getHash(t, j)) {
 		if (v->ply >= n) {
@@ -56,11 +55,9 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 	v->eval = val;
 	v->flag = flag;
 	v->ply = n;
-	//printf("G %p %016llx %d\n", v, v->hash, v->ply);
 }
 
 int distMedia(uint64_t t) {
-	//printf("%016llx ", t);
 	int ib, c = count(t);
 	int pl[12], pc[12];
 	double pml = 0, pmc = 0;
@@ -79,7 +76,6 @@ int distMedia(uint64_t t) {
 	double dm = 0;
 	for (int i = 0; i < c; ++i)
 		dm += max(fabs(pl[i]-pml), fabs(pc[i]-pmc));
-	//printf("%d %.2f %.2f %.3f\n", c, pml, pmc, dm/c);
 	return (int)(1000*dm / c);
 }
 
@@ -90,8 +86,7 @@ int eval(Tabuleiro t, Jogador j, Jogador v) {
 		return INT_MIN+1;
 	uint64_t pj = t.pecas[j];
 	uint64_t pa = t.pecas[adv(j)];
-	//printf("%016llx %016llx\n", pj, pa);
-	return 500*nGrupos(pa)-1500*nGrupos(pj)+1000*distMedia(pa)-1000*distMedia(pj);
+	return distMedia(pa) - distMedia(pj);
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
