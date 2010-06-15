@@ -12,35 +12,29 @@ Tabuleiro novoTab(Jogador in) {
 }
 
 uint64_t linhaXY(uint64_t t) {
-	for (int i = 0; i < 8; ++i)
-		if (linha(i) & t)
-			return linha(i);
-	return 0;
+	return linha(posLinha(indiceBit(t)));
 }
 
 uint64_t colunaXY(uint64_t t) {
-	for (int i = 0; i < 8; ++i)
-		if (coluna(i) & t)
-			return coluna(i);
-	return 0;
+	return coluna(posColuna(indiceBit(t)));
 }
 
 uint64_t diagPriXY(uint64_t t) {
-	uint64_t i;
-	uint8_t j;
-	for (i = 0x80, j = 0x80; i <= DIAG_PRI; j >>= 1, i = (i<<8)+j)
-		if (i & t)
-			return i;
-	return 0;
+	int ib = indiceBit(t);
+	int lc = posLinha(ib) - posColuna(ib);
+	if (lc >= 0)
+		return DIAG_PRI >> (8*lc);
+	else
+		return DIAG_PRI << (8*-lc);
 }
 
 uint64_t diagSecXY(uint64_t t) {
-	uint64_t i;
-	uint8_t j;
-	for (i = 1, j = 1; i <= DIAG_SEC; j <<= 1, i = (i<<8)+j)
-		if (i & t)
-			return i;
-	return 0;
+	int ib = indiceBit(t);
+	int lc = posLinha(ib) + posColuna(ib) - 7;
+	if (lc >= 0)
+		return DIAG_SEC >> (8*lc);
+	else
+		return DIAG_SEC << (8*-lc);
 }
 
 uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {

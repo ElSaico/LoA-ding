@@ -26,13 +26,11 @@ uint64_t getHash(Tabuleiro t, Jogador j) {
 		if (k & t.pecas[J_PRETO])
 			h ^= hash[J_PRETO][i];
 	}
-	//printf("%lld\n", h % TSIZE);
 	return h;
 }
 
 int lerHash(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	Trans* v = &trans[getHash(t, j) % TSIZE];
-	//printf("L %p %016llx %016llx %d\n", v, v->hash, getHash(t, j), v->ply);
 	
 	if (v->hash == getHash(t, j)) {
 		if (v->ply >= n) {
@@ -55,7 +53,6 @@ void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
 	v->eval = val;
 	v->flag = flag;
 	v->ply = n;
-	//printf("G %p %016llx %d\n", v, v->hash, v->ply);
 }
 
 int eval(Tabuleiro t, Jogador j, Jogador v) {
