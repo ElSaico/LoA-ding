@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
+#include <math.h>
+
 #include "ia.h"
 
 uint64_t rand64() {
@@ -66,16 +68,36 @@ int movimentos(Tabuleiro t, uint64_t p0) {
 	return gl;
 }
 
+int distMedia(uint64_t t) {
+	int ib, c = count(t);
+	int pl[12], pc[12];
+	double pml = 0, pmc = 0;
+	uint64_t b;
+	for (int i = 0; i < c; ++i) {
+		b = t & -t;
+		ib = indiceBit(b);
+		pl[i] = posLinha(ib);
+		pml += pl[i];
+		pc[i] = posColuna(ib);
+		pmc += pc[i];
+		t ^= b;
+	}
+	pml /= c;
+	pmc /= c;
+	double dm = 0;
+	for (int i = 0; i < c; ++i)
+		dm += max(fabs(pl[i]-pml), fabs(pc[i]-pmc));
+	return (int)(1000*dm / c);
+}
+
 int eval(Tabuleiro t, Jogador j, Jogador v) {
 	if (v == j)
 		return INT_MAX;
 	if (v == adv(j))
 		return INT_MIN+1;
-	
-	uint64_t pc = t.pecas[j];
-	uint64_t pca = t.pecas[adv(j)];
-	return 200*(13-nGrupos(pc))  - 150*(13-nGrupos(pca))
-	     + 200*movimentos(t, pc) - 150*movimentos(t, pca);
+	uint64_t pj = t.pecas[j];
+	uint64_t pa = t.pecas[adv(j)];
+	return distMedia(pa) - distMedia(pj) - 100*(movimentos(t, pa)/count(pa));
 }
 
 int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta, Jogador v) {
