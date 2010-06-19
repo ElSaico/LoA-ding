@@ -37,9 +37,9 @@ uint64_t diagSecXY(uint64_t t) {
 		return DIAG_SEC << (8*-lc);
 }
 
-uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {
+uint64_t moveLinha(Tabuleiro *t, uint64_t or, uint64_t ln, int n) {
 	uint64_t r = 0, l = 0, rl, rr, p, ret = 0;
-	int c = count(ln & grid(t));
+	int c = count(ln & grid(*t));
 	rl = ln & (or << (n*c));
 	rr = ln & (or >> (n*c));
 	
@@ -48,13 +48,13 @@ uint64_t moveLinha(Tabuleiro t, uint64_t or, uint64_t ln, int n) {
 	if (rr)
 		r = ((or - rr) ^ rr) & ln;
 
-	p = t.pecas[adv(t.turno)];
+	p = t->pecas[adv(t->turno)];
 	ret |= p & r ? 0 : rr;
 	ret |= p & l ? 0 : rl;
-	return ret & ~t.pecas[t.turno];
+	return ret & ~t->pecas[t->turno];
 }
 
-uint64_t movePara(Tabuleiro t, uint64_t or) {
+uint64_t movePara(Tabuleiro *t, uint64_t or) {
 	return moveLinha(t, or,   linhaXY(or), 1) | moveLinha(t, or,  colunaXY(or), 8)
 	     | moveLinha(t, or, diagPriXY(or), 9) | moveLinha(t, or, diagSecXY(or), 7);
 }
@@ -70,13 +70,13 @@ int nGrupos(uint64_t t) {
 	int n = 0;
 	uint64_t p, r;
 	while (t) {
-		p = (t & (t-1)) ^ t;
+		p = t & -t;
 		r = 0;
 		while (p) {
 			r |= p;
 			p = t & adj(r);
 		}
-		t &= ~r;
+		t ^= r;
 		n++;
 	}
 	return n;
