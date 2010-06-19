@@ -101,7 +101,7 @@ void jogarPC(Tabuleiro *t, Movimentos *m) {
 	m->origem_adv = 0;
 	m->destino_adv = 0;
 	draw(t, *m, false, J_NENHUM);
-	int n = negamax(&m->origem_adv, &m->destino_adv, *t);
+	int n = negamax(&m->origem_adv, &m->destino_adv, t);
 	move(t, m->origem_adv, m->destino_adv);
 	printf("%+3d %016llx %016llx\n", n, m->origem_adv, m->destino_adv);
 	t->turno = t->jogador;								
@@ -166,7 +166,7 @@ bool eventLoop(Tabuleiro *t, Movimentos *m) {
 					} else if (t->turno == t->jogador) {
 						m->origem = coord(t->pecas[t->jogador], posy, posx);
 						if (m->origem)
-							m->mov_validos = movePara(*t, m->origem);
+							m->mov_validos = movePara(t, m->origem);
 					}
 					draw(t, *m, venceu, vencedor);
 				}

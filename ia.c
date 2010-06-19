@@ -17,19 +17,19 @@ void initHash() {
 	}
 }
 
-uint64_t getHash(Tabuleiro t, Jogador j) {
+uint64_t getHash(Tabuleiro *t, Jogador j) {
 	int i;
 	uint64_t k, h = hash[j][0];
 	for (i = 1, k = 1; i <= 64; ++i, k <<= 1) {
-		if (k & t.pecas[J_BRANCO])
+		if (k & t->pecas[J_BRANCO])
 			h ^= hash[J_BRANCO][i];
-		if (k & t.pecas[J_PRETO])
+		if (k & t->pecas[J_PRETO])
 			h ^= hash[J_PRETO][i];
 	}
 	return h;
 }
 
-int lerHash(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+int lerHash(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 	Trans* v = &trans[getHash(t, j) % TSIZE];
 	
 	if (v->hash == getHash(t, j)) {
@@ -46,25 +46,24 @@ int lerHash(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	return HASH_NULL;
 }
 
-void gravarHash(Tabuleiro t, Jogador j, int n, int val, HashFlag flag) {
+void gravarHash(Tabuleiro *t, Jogador j, int n, int val, HashFlag flag) {
 	Trans* v = &trans[getHash(t, j) % TSIZE];
 	v->hash = getHash(t, j);
-	v->tab = t;
+	v->tab = *t;
 	v->eval = val;
 	v->flag = flag;
 	v->ply = n;
 }
 
-int eval(Tabuleiro t, Jogador j) {
+int eval(Tabuleiro *t, Jogador j) {
 	return abs(rand());
 }
 
-int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
+int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
 	if (n == 0) {
-		t.turno = j;
 		val = eval(t, j);
 		gravarHash(t, j, n, val, H_FOLHA);
 		return val;
@@ -73,28 +72,31 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	HashFlag flag = H_ALFA;
 	int an = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
-	Tabuleiro tt = t;
-	t.turno = j;
+	Tabuleiro tt = *t;
 	
-	p0 = t.pecas[j];
+	p0 = t->pecas[j];
 	while (p0) {
 		p = p0 & -p0;
+		t->turno = j;
 		d0 = movePara(t, p);
+		t->turno = adv(j);
 		while (d0) {
 			d = d0 & -d0;
-			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
-			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
+			tt.pecas[J_BRANCO] = t->pecas[J_BRANCO];
+			tt.pecas[J_PRETO]  = t->pecas[J_PRETO];
 			move(&tt, p, d);
 			if (vitoria(tt.pecas[adv(j)])) {
-				gravarHash(tt, j, n-1, INT_MIN+1, H_FOLHA);
-				gravarHash(tt, adv(j), n-1, INT_MAX, H_FOLHA);
+				gravarHash(&tt, j, n-1, INT_MIN+1, H_FOLHA);
+				gravarHash(&tt, adv(j), n-1, INT_MAX, H_FOLHA);
 				return INT_MIN+1;
 			} else if (vitoria(tt.pecas[j])) {
-				gravarHash(tt, j, n-1, INT_MAX, H_FOLHA);
-				gravarHash(tt, adv(j), n-1, INT_MIN+1, H_FOLHA);
+				gravarHash(&tt, j, n-1, INT_MAX, H_FOLHA);
+				gravarHash(&tt, adv(j), n-1, INT_MIN+1, H_FOLHA);
 				return INT_MAX;
 			}
-			an = -minimax(tt, adv(j), n-1, -beta, -alfa);
+			tt.turno = adv(j);
+			an = -minimax(&tt, adv(j), n-1, -beta, -alfa);
+			tt.turno = j;
 			if (an >= beta) {
 				gravarHash(t, j, n, an, H_BETA);
 				return an;
@@ -112,22 +114,22 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	return alfa;
 }
 
-int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
+int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) {
 	clock_t init = clock();
 	int m0;
 	uint64_t p = 0, d = 0, d0, p0;
-	Tabuleiro tt = t;
+	Tabuleiro tt = *t;
 	
-	p0 = t.pecas[t.turno];
+	p0 = t->pecas[t->turno];
 	while (p0) {
 		p = p0 & -p0;
 		d0 = movePara(t, p);
 		while (d0) {
 			d = d0 & -d0;
-			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
-			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
+			tt.pecas[J_BRANCO] = t->pecas[J_BRANCO];
+			tt.pecas[J_PRETO]  = t->pecas[J_PRETO];
 			move(&tt, p, d);
-			m0 = -minimax(tt, adv(t.turno), nmax, -beta, -alfa);
+			m0 = -minimax(&tt, adv(t->turno), nmax, -beta, -alfa);
 			if (m0 >= beta) {
 				*or = p;
 				*dst = d;
@@ -148,11 +150,11 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 	return alfa;
 }
 
-int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t) {
+int negamax(uint64_t* or, uint64_t* dst, Tabuleiro *t) {
 	return minimax_root(or, dst, t, INT_MIN+1, INT_MAX);
 }
 
-int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro t, int f) {
+int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro *t, int f) {
 	int g = f, beta;
 	int upperBound = INT_MAX;
 	int lowerBound = INT_MIN;
