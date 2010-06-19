@@ -22,11 +22,11 @@ typedef struct {
 uint64_t hash[2][65]; // [i][0] = turno
 Trans trans[TSIZE];
 
-static const int nmax = 3;
+static const int nmax = 4;
 
 void initHash();
-int eval(Tabuleiro t, Jogador j);
-int negamax(uint64_t* or, uint64_t* dst, Tabuleiro t);
-int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro t, int f);
+int eval(Tabuleiro *t, Jogador j);
+int negamax(uint64_t* or, uint64_t* dst, Tabuleiro *t);
+int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro *t, int f);
 
 #endif

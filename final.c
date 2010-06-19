@@ -14,11 +14,14 @@ typedef struct {
 	uint64_t destino_adv;
 } Movimentos;
 
-#define posline(l,x) (x-border)*8/(l-2*border)
-#define linepos(x,y) border+(y)*(x-2*border)/8
-#define sizepos(x) (x-2*border)/16
-#define coordXY(t,x,y) coord(t, posline(vsize, y), posline(hsize, x))
-#define posXY(x,y) pos(posline(vsize, y), posline(hsize, x))
+#define posH(h) (h-border)*8/(hsize-2*border)
+#define posV(v) (v-border)*8/(vsize-2*border)
+
+#define lineX(x) border+(x)*(hsize-2*border)/8
+#define lineY(y) border+(y)*(vsize-2*border)/8
+
+#define sizeX (hsize-2*border)/16
+#define sizeY (vsize-2*border)/16
 
 #define C_BRANCO   0xFFFFFFFF
 #define C_PRETO    0x000000FF
@@ -34,13 +37,11 @@ Sint16 vsize = 480;
 SDL_Surface *tela = NULL;
 
 void mostraPreto(int l, int c, Uint32 cor) {
-	filledEllipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
-	                    0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
+	filledEllipseColor(tela, lineX(c+0.5), lineY(l+0.5), 0.75*sizeX, 0.75*sizeY, cor);
 }
 
 void mostraBranco(int l, int c, Uint32 cor) {
-	ellipseColor(tela, linepos(hsize, c+0.5), linepos(vsize, l+0.5),
-	              0.75*sizepos(hsize),   0.75*sizepos(vsize), cor);
+	ellipseColor(tela, lineX(c+0.5), lineY(l+0.5), 0.75*sizeX, 0.75*sizeY, cor);
 }
 
 void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
@@ -49,17 +50,21 @@ void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 	if (hsize >= 2*border && vsize >= 2*border) {
 		Uint32 cor;
 		for (int i = 0; i < 8; ++i) {
-			characterColor(tela, border/2, linepos(vsize, i+0.5), '8'-i, C_PRETO);
-			characterColor(tela, linepos(hsize, i+0.5), border/2, i+'A', C_PRETO);
+			characterColor(tela, border/2, lineY(i+0.5), '8'-i, C_PRETO);
+			characterColor(tela, lineX(i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
 				if (coord(m.mov_validos, i, j))
-					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
-					       linepos(hsize, j+1), linepos(vsize, i+1), C_AZUL);
+					boxColor(tela, lineX(j), lineY(i), lineX(j+1), lineY(i+1), C_AZUL);
 				else if (coord(m.origem_adv, i, j))
-					boxColor(tela, linepos(hsize, j), linepos(vsize, i),
-					       linepos(hsize, j+1), linepos(vsize, i+1), C_VERMELHO);
-				cor = coord(m.origem, i, j) ? C_AZUL : C_PRETO;
-				cor |= coord(m.destino_adv, i, j) ? C_VERMELHO : C_PRETO;
+					boxColor(tela, lineX(j), lineY(i), lineX(j+1), lineY(i+1), C_VERMELHO);
+				
+				if (coord(m.origem, i, j))
+					cor = C_AZUL;
+				else if (coord(m.destino_adv, i, j))
+					cor = C_VERMELHO;
+				else
+					cor = C_PRETO;
+				
 				if (coord(t->pecas[J_BRANCO], i, j))
 					mostraBranco(i, j, cor);
 				else if (coord(t->pecas[J_PRETO], i, j))
@@ -68,8 +73,8 @@ void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 		}
 		
 		for (int i = 1; i < 8; ++i) {
-			hlineColor(tela, border, hsize-border, linepos(vsize, i), C_PRETO);
-			vlineColor(tela, linepos(hsize, i), border, vsize-border, C_PRETO);
+			hlineColor(tela, border, hsize-border, lineY(i), C_PRETO);
+			vlineColor(tela, lineX(i), border, vsize-border, C_PRETO);
 		}
 		
 		static const char *cores[] = {"Branco", "Preto"};
@@ -96,7 +101,7 @@ void jogarPC(Tabuleiro *t, Movimentos *m) {
 	m->origem_adv = 0;
 	m->destino_adv = 0;
 	draw(t, *m, false, J_NENHUM);
-	int n = negamax(&m->origem_adv, &m->destino_adv, *t);
+	int n = negamax(&m->origem_adv, &m->destino_adv, t);
 	move(t, m->origem_adv, m->destino_adv);
 	printf("%+3d %016llx %016llx\n", n, m->origem_adv, m->destino_adv);
 	t->turno = t->jogador;								
@@ -128,8 +133,10 @@ bool eventLoop(Tabuleiro *t, Movimentos *m) {
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (!venceu) {
+					int posx = posH(e.button.x);
+					int posy = posV(e.button.y);
 					if ((e.button.button == SDL_BUTTON_LEFT) && m->mov_validos) {
-						m->destino = posXY(e.button.x, e.button.y);
+						m->destino = pos(posy, posx);
 						if (m->mov_validos & m->destino) {
 							move(t, m->origem, m->destino);
 							venceu = verificaVitoria(t, m, t->jogador);
@@ -157,9 +164,9 @@ bool eventLoop(Tabuleiro *t, Movimentos *m) {
 						m->mov_validos = 0;
 						m->origem = 0;
 					} else if (t->turno == t->jogador) {
-						m->origem = coordXY(t->pecas[t->jogador], e.button.x, e.button.y);
+						m->origem = coord(t->pecas[t->jogador], posy, posx);
 						if (m->origem)
-							m->mov_validos = movePara(*t, m->origem);
+							m->mov_validos = movePara(t, m->origem);
 					}
 					draw(t, *m, venceu, vencedor);
 				}
