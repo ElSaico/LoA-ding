@@ -72,31 +72,30 @@ int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 	HashFlag flag = H_ALFA;
 	int an = alfa;
 	uint64_t p = 0, d = 0, d0, p0;
-	Tabuleiro tt = *t;
+	uint64_t backupBr = t->pecas[J_BRANCO];
+	uint64_t backupPr = t->pecas[J_PRETO];
 	
 	p0 = t->pecas[j];
+	t->turno = j;
 	while (p0) {
 		p = p0 & -p0;
-		t->turno = j;
 		d0 = movePara(t, p);
-		t->turno = adv(j);
 		while (d0) {
 			d = d0 & -d0;
-			tt.pecas[J_BRANCO] = t->pecas[J_BRANCO];
-			tt.pecas[J_PRETO]  = t->pecas[J_PRETO];
-			move(&tt, p, d);
-			if (vitoria(tt.pecas[adv(j)])) {
-				gravarHash(&tt, j, n-1, INT_MIN+1, H_FOLHA);
-				gravarHash(&tt, adv(j), n-1, INT_MAX, H_FOLHA);
+			move(t, p, d);
+			if (vitoria(t->pecas[adv(j)])) {
+				gravarHash(t, j, n-1, INT_MIN+1, H_FOLHA);
+				gravarHash(t, adv(j), n-1, INT_MAX, H_FOLHA);
 				return INT_MIN+1;
-			} else if (vitoria(tt.pecas[j])) {
-				gravarHash(&tt, j, n-1, INT_MAX, H_FOLHA);
-				gravarHash(&tt, adv(j), n-1, INT_MIN+1, H_FOLHA);
+			} else if (vitoria(t->pecas[j])) {
+				gravarHash(t, j, n-1, INT_MAX, H_FOLHA);
+				gravarHash(t, adv(j), n-1, INT_MIN+1, H_FOLHA);
 				return INT_MAX;
 			}
-			tt.turno = adv(j);
-			an = -minimax(&tt, adv(j), n-1, -beta, -alfa);
-			tt.turno = j;
+			an = -minimax(t, adv(j), n-1, -beta, -alfa);
+			t->pecas[J_BRANCO] = backupBr;
+			t->pecas[J_PRETO]  = backupPr;
+			t->turno = j;
 			if (an >= beta) {
 				gravarHash(t, j, n, an, H_BETA);
 				return an;
@@ -118,7 +117,9 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 	clock_t init = clock();
 	int m0;
 	uint64_t p = 0, d = 0, d0, p0;
-	Tabuleiro tt = *t;
+	uint64_t backupBr = t->pecas[J_BRANCO];
+	uint64_t backupPr = t->pecas[J_PRETO];
+	Jogador j = t->turno;
 	
 	p0 = t->pecas[t->turno];
 	while (p0) {
@@ -126,10 +127,11 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 		d0 = movePara(t, p);
 		while (d0) {
 			d = d0 & -d0;
-			tt.pecas[J_BRANCO] = t->pecas[J_BRANCO];
-			tt.pecas[J_PRETO]  = t->pecas[J_PRETO];
-			move(&tt, p, d);
-			m0 = -minimax(&tt, adv(t->turno), nmax, -beta, -alfa);
+			move(t, p, d);
+			m0 = -minimax(t, adv(t->turno), nmax, -beta, -alfa);
+			t->pecas[J_BRANCO] = backupBr;
+			t->pecas[J_PRETO]  = backupPr;
+			t->turno = j;
 			if (m0 >= beta) {
 				*or = p;
 				*dst = d;
