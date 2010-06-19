@@ -78,10 +78,10 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 	
 	p0 = t.pecas[j];
 	while (p0) {
-		p = (p0 & (p0-1)) ^ p0;
+		p = p0 & -p0;
 		d0 = movePara(t, p);
 		while (d0) {
-			d = (d0 & (d0-1)) ^ d0;
+			d = d0 & -d0;
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
@@ -103,9 +103,9 @@ int minimax(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
 				flag = H_FOLHA;
 				alfa = an;
 			}
-			d0 &= ~d;
+			d0 ^= d;
 		}
-		p0 &= ~p;
+		p0 ^= p;
 	}
 	
 	gravarHash(t, j, n, alfa, flag);
@@ -120,10 +120,10 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 	
 	p0 = t.pecas[t.turno];
 	while (p0) {
-		p = (p0 & (p0-1)) ^ p0;
+		p = p0 & -p0;
 		d0 = movePara(t, p);
 		while (d0) {
-			d = (d0 & (d0-1)) ^ d0;
+			d = d0 & -d0;
 			tt.pecas[J_BRANCO] = t.pecas[J_BRANCO];
 			tt.pecas[J_PRETO]  = t.pecas[J_PRETO];
 			move(&tt, p, d);
@@ -138,9 +138,9 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro t, int alfa, int beta) {
 				*or = p;
 				*dst = d;
 			}
-			d0 &= ~d;
+			d0 ^= d;
 		}
-		p0 &= ~p;
+		p0 ^= p;
 	}
 	
 	double s = desde(init);

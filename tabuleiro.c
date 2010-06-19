@@ -70,13 +70,13 @@ int nGrupos(uint64_t t) {
 	int n = 0;
 	uint64_t p, r;
 	while (t) {
-		p = (t & (t-1)) ^ t;
+		p = t & -t;
 		r = 0;
 		while (p) {
 			r |= p;
 			p = t & adj(r);
 		}
-		t &= ~r;
+		t ^= r;
 		n++;
 	}
 	return n;
