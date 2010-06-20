@@ -73,7 +73,7 @@ int eval(Tabuleiro *t, Jogador j) {
 	     + 200*movimentos(t, pc) - 150*movimentos(t, pca);
 }
 
-int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
+int negascout(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 	int val = lerHash(t, j, n, alfa, beta);
 	if (val != HASH_NULL)
 		return val;
@@ -84,7 +84,7 @@ int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 	}
 	
 	HashFlag flag = H_ALFA;
-	int an = alfa;
+	int an = alfa, bn = beta;
 	uint64_t p = 0, d = 0, d0, p0;
 	uint64_t backupBr = t->pecas[J_BRANCO];
 	uint64_t backupPr = t->pecas[J_PRETO];
@@ -106,18 +106,25 @@ int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 				gravarHash(t, adv(j), n-1, INT_MIN+1, H_FOLHA);
 				return INT_MAX;
 			}
-			an = -minimax(t, adv(j), n-1, -beta, -alfa);
+			an = -negascout(t, adv(j), n-1, -bn, -alfa);
 			t->pecas[J_BRANCO] = backupBr;
 			t->pecas[J_PRETO]  = backupPr;
 			t->turno = j;
-			if (an >= beta) {
-				gravarHash(t, j, n, an, H_BETA);
-				return an;
+			if ((alfa < an) && (an < beta)) {
+				an = -negascout(t, adv(j), n-1, -beta, -alfa);
+				t->pecas[J_BRANCO] = backupBr;
+				t->pecas[J_PRETO]  = backupPr;
+				t->turno = j;
 			}
 			if (an > alfa) {
 				flag = H_FOLHA;
 				alfa = an;
 			}
+			if (alfa >= beta) {
+				gravarHash(t, j, n, alfa, H_BETA);
+				return alfa;
+			}
+			bn = alfa + 1;
 			d0 ^= d;
 		}
 		p0 ^= p;
@@ -158,7 +165,7 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 				*dst = d;
 				return INT_MAX;
 			}
-			m0 = -minimax(t, adv(t->turno), nmax, -beta, -alfa);
+			m0 = -negascout(t, adv(t->turno), nmax, -beta, -alfa);
 			t->pecas[J_BRANCO] = backupBr;
 			t->pecas[J_PRETO]  = backupPr;
 			t->turno = j;
@@ -189,7 +196,7 @@ int negamax(uint64_t* or, uint64_t* dst, Tabuleiro *t) {
 int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro *t, int f) {
 	int g = f, beta;
 	int upperBound = INT_MAX;
-	int lowerBound = INT_MIN;
+	int lowerBound = INT_MIN+1;
 	uint64_t o, d;
 	while (lowerBound < upperBound) {
 		if (g == lowerBound)
@@ -206,20 +213,3 @@ int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro *t, int f) {
 	}
 	return g;
 }
-
-/*int negascout(Tabuleiro t, Jogador j, int n, int alfa, int beta) {
-	if (n == 0)
-		return eval(t, j);
-	int a, b = beta;
-	foreach child of node {
-		a = -negascout (child, adv(j), n-1, -b, -alfa);
-		if ((alfa < a) && (a < beta))
-			a = -negascout(child, adv(j), n-1, -beta, -alfa);
-		if (a > alfa)
-			alfa = a;
-		if (alfa >= beta)
-			return alfa;
-		b = alfa + 1;
-	}
-	return alfa;
-}*/
