@@ -4,7 +4,7 @@
 #include <time.h>
 #include "tabuleiro.h"
 
-#define TSIZE 131072
+#define TSIZE 262144
 #define HASH_NULL 777
 
 #define desde(t) ((clock()-(t)) / (float)CLOCKS_PER_SEC)
@@ -22,7 +22,7 @@ typedef struct {
 uint64_t hash[2][65]; // [i][0] = turno
 Trans trans[TSIZE];
 
-static const int nmax = 5;
+static const int nmax = 4;
 
 void initHash();
 int eval(Tabuleiro *t, Jogador j);
