@@ -142,6 +142,18 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 		while (d0) {
 			d = d0 & -d0;
 			move(t, p, d);
+			if (vitoria(t->pecas[adv(j)])) {
+				t->pecas[J_BRANCO] = backupBr;
+				t->pecas[J_PRETO]  = backupPr;
+				d0 ^= d;
+				continue;
+			} else if (vitoria(t->pecas[j])) {
+				t->pecas[J_BRANCO] = backupBr;
+				t->pecas[J_PRETO]  = backupPr;
+				*or = p;
+				*dst = d;
+				return INT_MAX;
+			}
 			m0 = -minimax(t, adv(t->turno), nmax, -beta, -alfa);
 			t->pecas[J_BRANCO] = backupBr;
 			t->pecas[J_PRETO]  = backupPr;
