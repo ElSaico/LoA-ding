@@ -131,6 +131,10 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 			if (vitoria(t->pecas[adv(j)])) {
 				t->pecas[J_BRANCO] = backupBr;
 				t->pecas[J_PRETO]  = backupPr;
+				if (!(*or | *dst)) {
+					*or = p;
+					*dst = d;
+				}
 				d0 ^= d;
 				continue;
 			} else if (vitoria(t->pecas[j])) {
