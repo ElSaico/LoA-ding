@@ -82,7 +82,7 @@ int distMedia(uint64_t t) {
 int eval(Tabuleiro *t, Jogador j) {
 	uint64_t pj = t->pecas[j];
 	uint64_t pa = t->pecas[adv(j)];
-	return distMedia(pa) - distMedia(pj);
+	return distMedia(pa) - 3*distMedia(pj);
 }
 
 int minimax(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
