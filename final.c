@@ -53,21 +53,21 @@ void draw(Tabuleiro *t, Movimentos m, bool venceu, Jogador vencedor) {
 			characterColor(tela, border/2, lineY(i+0.5), '8'-i, C_PRETO);
 			characterColor(tela, lineX(i+0.5), border/2, i+'A', C_PRETO);
 			for (int j = 0; j < 8; ++j) {
-				if (coord(m.mov_validos, i, j))
+				if (m.mov_validos & pos(i, j))
 					boxColor(tela, lineX(j), lineY(i), lineX(j+1), lineY(i+1), C_AZUL);
-				else if (coord(m.origem_adv, i, j))
+				else if (m.origem_adv & pos(i, j))
 					boxColor(tela, lineX(j), lineY(i), lineX(j+1), lineY(i+1), C_VERMELHO);
 				
-				if (coord(m.origem, i, j))
+				if (m.origem & pos(i, j))
 					cor = C_AZUL;
-				else if (coord(m.destino_adv, i, j))
+				else if (m.destino_adv & pos(i, j))
 					cor = C_VERMELHO;
 				else
 					cor = C_PRETO;
 				
-				if (coord(t->pecas[J_BRANCO], i, j))
+				if (t->pecas[J_BRANCO] & pos(i, j))
 					mostraBranco(i, j, cor);
-				else if (coord(t->pecas[J_PRETO], i, j))
+				else if (t->pecas[J_PRETO] & pos(i, j))
 					mostraPreto(i, j, cor);
 				}
 		}
@@ -164,7 +164,7 @@ bool eventLoop(Tabuleiro *t, Movimentos *m) {
 						m->mov_validos = 0;
 						m->origem = 0;
 					} else if (t->turno == t->jogador) {
-						m->origem = coord(t->pecas[t->jogador], posy, posx);
+						m->origem = t->pecas[t->jogador] & pos(posy, posx);
 						if (m->origem)
 							m->mov_validos = movePara(t, m->origem);
 					}

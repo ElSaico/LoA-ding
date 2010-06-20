@@ -13,7 +13,6 @@
 
 #define max(x,y) ((x) > (y) ? (x) : (y))
 #define pos(x,y) (0x8000000000000000ULL >> (((x) << 3)+(y)))
-#define coord(t,x,y) (t & pos(x, y))
 #define count(x) __builtin_popcountll(x)
 #define grid(t) ((t).pecas[J_BRANCO] ^ (t).pecas[J_PRETO])
 #define linha(x) (0xFF00000000000000ULL >> ((x) << 3))
