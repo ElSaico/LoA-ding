@@ -102,6 +102,9 @@ void jogarPC(Tabuleiro *t, Movimentos *m) {
 	m->destino_adv = 0;
 	draw(t, *m, false, J_NENHUM);
 	int n = negamax(&m->origem_adv, &m->destino_adv, t);
+	//int n = 0;
+	//for (int i = 1; i <= nmax; ++i)
+		//n = mtdf(&m->origem_adv, &m->destino_adv, t, n);
 	move(t, m->origem_adv, m->destino_adv);
 	printf("%+3d %016llx %016llx\n", n, m->origem_adv, m->destino_adv);
 	t->turno = t->jogador;								
