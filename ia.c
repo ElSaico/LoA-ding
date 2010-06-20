@@ -121,7 +121,12 @@ int negascout(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
 }
 
 int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) {
+	int val = lerHash(t, t->turno, nmax, alfa, beta);
+	if (val != HASH_NULL)
+		return val;
+
 	clock_t init = clock();
+	HashFlag flag = H_ALFA;
 	int m0;
 	uint64_t p = 0, d = 0, d0, p0;
 	uint64_t backupBr = t->pecas[J_BRANCO];
@@ -147,6 +152,8 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 			} else if (vitoria(t->pecas[j])) {
 				t->pecas[J_BRANCO] = backupBr;
 				t->pecas[J_PRETO]  = backupPr;
+				gravarHash(t, j, nmax-1, INT_MAX, H_FOLHA);
+				gravarHash(t, adv(j), nmax-1, INT_MIN+1, H_FOLHA);
 				*or = p;
 				*dst = d;
 				return INT_MAX;
@@ -161,6 +168,7 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 				return m0;
 			}
 			if (m0 > alfa) {
+				flag = H_FOLHA;
 				alfa = m0;
 				*or = p;
 				*dst = d;
@@ -172,6 +180,7 @@ int minimax_root(uint64_t* or, uint64_t* dst, Tabuleiro *t, int alfa, int beta) 
 	
 	double s = desde(init);
 	printf("Tempo: %.2lf segundos.\n", s);
+	gravarHash(t, j, nmax, alfa, flag);
 	return alfa;
 }
 
@@ -183,19 +192,16 @@ int mtdf(uint64_t* or, uint64_t* dst, Tabuleiro *t, int f) {
 	int g = f, beta;
 	int upperBound = INT_MAX;
 	int lowerBound = INT_MIN+1;
-	uint64_t o, d;
 	while (lowerBound < upperBound) {
 		if (g == lowerBound)
 			beta = g+1;
 		else
 			beta = g;
-		g = minimax_root(&o, &d, t, beta-1, beta);
+		g = minimax_root(or, dst, t, beta-1, beta);
 		if (g < beta)
 			upperBound = g;
 		else
 			lowerBound = g;
-		*or = o;
-		*dst = d;
 	}
 	return g;
 }
