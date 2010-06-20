@@ -69,7 +69,7 @@ int movimentos(Tabuleiro *t, uint64_t p0) {
 }
 
 int distMedia(uint64_t t) {
-	int ib, c = count(t);
+	int ib, pos = 0, c = count(t);
 	int pl[12], pc[12];
 	double pml = 0, pmc = 0;
 	uint64_t b;
@@ -80,6 +80,7 @@ int distMedia(uint64_t t) {
 		pml += pl[i];
 		pc[i] = posColuna(ib);
 		pmc += pc[i];
+		pos += valorPos[pl[i]][pc[i]];
 		t ^= b;
 	}
 	pml /= c;
@@ -87,13 +88,13 @@ int distMedia(uint64_t t) {
 	double dm = 0;
 	for (int i = 0; i < c; ++i)
 		dm += max(fabs(pl[i]-pml), fabs(pc[i]-pmc));
-	return (int)(1000*dm / c);
+	return (int)((1000*dm + 100*pos) / c);
 }
 
 int eval(Tabuleiro *t, Jogador j) {
 	uint64_t pj = t->pecas[j];
 	uint64_t pa = t->pecas[adv(j)];
-	return distMedia(pa) - distMedia(pj) - 100*(movimentos(t, pa)/count(pa));
+	return distMedia(pa) - 3*distMedia(pj) - 100*(movimentos(t, pa)/count(pa));
 }
 
 int negascout(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {

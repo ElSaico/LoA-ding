@@ -24,6 +24,16 @@ Trans trans[TSIZE];
 
 static const int nmax = 4;
 
+static const uint8_t valorPos[][8] = 
+	{{-8, -4, -2, -2, -2, -2, -4, -8},
+	 {-4,  1,  1,  1,  1,  1,  1, -4},
+	 {-2,  1,  2,  2,  2,  2,  1, -2},
+	 {-2,  1,  2,  4,  4,  2,  1, -2},
+	 {-2,  1,  2,  4,  4,  2,  1, -2},
+	 {-2,  1,  2,  2,  2,  2,  1, -2},
+	 {-4,  1,  1,  1,  1,  1,  1, -4},
+	 {-8, -4, -2, -2, -2, -2, -4, -8}};
+
 void initHash();
 int eval(Tabuleiro *t, Jogador j);
 int negamax(uint64_t* or, uint64_t* dst, Tabuleiro *t);
