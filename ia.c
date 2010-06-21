@@ -55,22 +55,27 @@ void gravarHash(Tabuleiro *t, Jogador j, int n, int val, HashFlag flag) {
 	v->ply = n;
 }
 
-int movimentos(Tabuleiro *t, uint64_t p0) {
-	int gl = 0;
-	uint64_t p;
+int movimentos(Tabuleiro *t, Jogador j) {
+	t->turno = j;
+	int gl = 0, vb;
+	uint64_t p, p0 = t->pecas[j], pd0, pd;
 	while (p0) {
 		p = p0 & -p0;
-		gl += count(movePara(t, p));
-		p0 &= ~p;
+		pd0 = movePara(t, p);
+		while (pd0) {
+			pd = pd0 & -pd0;
+			vb = valorPos[indiceBit(pd)];
+			if (vb > 0)
+				gl += 10*vb;
+			pd0 ^= pd;
+		}
+		p0 ^= p;
 	}
 	return gl;
 }
 
 int eval(Tabuleiro *t, Jogador j) {
-	uint64_t pc = t->pecas[j];
-	uint64_t pca = t->pecas[adv(j)];
-	return 200*(13-nGrupos(pc))  - 150*(13-nGrupos(pca))
-	     + 200*movimentos(t, pc) - 150*movimentos(t, pca);
+	return movimentos(t, j) - 3*movimentos(t, adv(j));
 }
 
 int negascout(Tabuleiro *t, Jogador j, int n, int alfa, int beta) {
