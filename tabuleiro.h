@@ -20,6 +20,7 @@
 #define adv(t) (t == J_BRANCO ? J_PRETO : J_BRANCO)
 #define posLinha(t) (7-((t) >> 3))
 #define posColuna(t) (7-((t) & 0x07))
+#define indiceBit(x) (__builtin_ffsll(x) - 1)
 
 typedef enum {
 	J_BRANCO = 0,
@@ -38,6 +39,5 @@ void move(Tabuleiro* t, uint64_t or, uint64_t d);
 uint64_t movePara(Tabuleiro* t, uint64_t or);
 int nGrupos(uint64_t t);
 bool vitoria(uint64_t t);
-uint8_t indiceBit(uint64_t t);
 
 #endif
